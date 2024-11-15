@@ -87,9 +87,10 @@ int krb_ticket_renew_handler( Daemon cf_daemon )
                                 }
                                 if ( status.first < 0 )
                                 {
-                                    cf_logger.logger( LOG_ERR,
-                                                      "Error %d: Cannot get machine krb ticket",
-                                                      status );
+                                    cf_logger.logger(
+                                        LOG_ERR, "Error %d: Cannot get machine krb ticket",
+                                        ( std::to_string( status.first ) + " " + status.second )
+                                            .c_str() );
                                 }
                                 else
                                 {
@@ -108,11 +109,11 @@ int krb_ticket_renew_handler( Daemon cf_daemon )
         catch ( const std::exception& ex )
         {
             std::string log_str = Util::getCurrentTime() + '\t' + "ERROR: '" + ex.what() + "'!\n";
-            cf_logger.logger( LOG_ERR, log_str.c_str() );
+            cf_logger.logger( LOG_ERR, log_str.c_str(), "" );
             std::cerr << log_str << std::endl;
             log_str = Util::getCurrentTime() + '\t' + "ERROR: failed to run ticket renewal";
             std::cerr << log_str << std::endl;
-            cf_logger.logger( LOG_ERR, log_str.c_str() );
+            cf_logger.logger( LOG_ERR, log_str.c_str(), "" );
             break;
         }
     }

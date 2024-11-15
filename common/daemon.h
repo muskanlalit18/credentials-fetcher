@@ -135,7 +135,7 @@ class CF_logger
         {
             std::string logFmt = fmt;
             std::replace( logFmt.begin(), logFmt.end(), '\n', ' ' );
-            sd_journal_print( level, logFmt.c_str() );
+            sd_journal_print( level, logFmt.c_str(), logs );
             write_log( logFmt.c_str(), logs );
         }
     }
