@@ -30,42 +30,42 @@ std::pair<int, std::string> generate_krb_ticket_from_machine_keytab( std::string
     result = Util::is_hostname_cmd_present();
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
         return result;
     }
 
     result = Util::is_hostname_cmd_present();
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
         return result;
     }
 
     result = Util::is_realm_cmd_present();
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
         return result;
     }
 
     result = Util::is_kinit_cmd_present();
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
         return result;
     }
 
     result = Util::is_ldapsearch_cmd_present();
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
         return result;
     }
 
     result = Util::is_decode_exe_present();
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
         return result;
     }
 
@@ -79,7 +79,7 @@ std::pair<int, std::string> generate_krb_ticket_from_machine_keytab( std::string
         std::cerr << "ERROR: " << __func__ << ":" << __LINE__ << " invalid machine principal"
                   << std::endl;
         std::string err_msg = "ERROR: invalid machine principal";
-        cf_logger.logger( LOG_ERR, err_msg.c_str() );
+        cf_logger.logger( LOG_ERR, err_msg.c_str(), "" );
         result = std::make_pair( -1, err_msg );
         return result;
     }
@@ -87,7 +87,7 @@ std::pair<int, std::string> generate_krb_ticket_from_machine_keytab( std::string
     result = Util::execute_kinit_in_domain_joined_case( machine_principal.second );
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
         return result;
     }
 
@@ -121,7 +121,9 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
 
     if ( domain_name.empty() || gmsa_account_name.empty() )
     {
-        cf_logger.logger( LOG_ERR, "ERROR: %s:%d null args", __func__, __LINE__ );
+        cf_logger.logger(
+            LOG_ERR, "ERROR: %s:%d null args",
+            ( std::string( __func__ ) + " : " + std::to_string( __LINE__ ) ).c_str() );
         std::string err_msg = std::string( "domain_name " + domain_name + " or gmsa_account_name " +
                                            gmsa_account_name + " is empty" );
         return std::make_pair( -1, err_msg );
@@ -153,7 +155,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
                 distinguished_name = distinguished_name_result.second;
             }
             std::string log_str = "Found dn = " + distinguished_name + "\n";
-            cf_logger.logger( LOG_INFO, log_str.c_str() );
+            cf_logger.logger( LOG_INFO, log_str.c_str(), "" );
         }
 
         krb_ticket->distinguished_name = distinguished_name;
@@ -171,7 +173,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
                 log_str = "ldapsearch successful with FQDN = " + fqdn + ", cmd = " + log_str + "," +
                           "search_string = " + search_string + "\n";
                 std::cerr << log_str << std::endl;
-                cf_logger.logger( LOG_INFO, log_str.c_str() );
+                cf_logger.logger( LOG_INFO, log_str.c_str(), "" );
             }
             break;
         }
@@ -180,7 +182,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
             std::string log_str = "ldapsearch failed with FQDN = " + fqdn + " " +
                                   ldap_search_result.second.c_str() + " " + search_string;
             std::cerr << log_str << std::endl;
-            cf_logger.logger( LOG_INFO, log_str.c_str() );
+            cf_logger.logger( LOG_INFO, log_str.c_str(), "" );
         }
     }
     fqdn_list_result.clear();
@@ -199,7 +201,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
     {
         std::string log_str = Util::getCurrentTime() + '\t' + "ERROR: Password not found";
         std::cerr << log_str << std::endl;
-        cf_logger.logger( LOG_ERR, log_str.c_str() );
+        cf_logger.logger( LOG_ERR, log_str.c_str(), "" );
         return std::make_pair( -1, log_str );
     }
 
@@ -221,7 +223,8 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
         perror( "kinit failed" );
         OPENSSL_cleanse( password_found_result.second, password_found_result.first );
         OPENSSL_free( password_found_result.second );
-        cf_logger.logger( LOG_ERR, "ERROR: %s:%d kinit failed", __func__, __LINE__ );
+        cf_logger.logger( LOG_ERR, "ERROR: %s:%d kinit failed",
+                          ( std::string( __func__ ) + ":" + std::to_string( __LINE__ ) ).c_str() );
         std::cerr << Util::getCurrentTime() << '\t' << "ERROR: kinit failed" << std::endl;
         return std::make_pair( -1, std::string( "kinit failed" ) );
     }
@@ -232,7 +235,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
     std::string log_str = Util::getCurrentTime() + '\t' +
                           "INFO: kinit return value = " + std::to_string( error_code );
     std::cerr << log_str << std::endl;
-    cf_logger.logger( LOG_ERR, log_str.c_str() );
+    cf_logger.logger( LOG_ERR, log_str.c_str(), "" );
 
     OPENSSL_cleanse( password_found_result.second, password_found_result.first );
 
@@ -293,7 +296,7 @@ std::string get_ticket_expiration( std::string klist_ticket_info, CF_logger& cf_
             std::string log_str =
                 "Unable to parse klist for ticket expiration: " + klist_ticket_info;
             std::cerr << log_str << std::endl;
-            cf_logger.logger( LOG_ERR, log_str.c_str() );
+            cf_logger.logger( LOG_ERR, log_str.c_str(), "" );
             return std::string( "" );
         }
     }
@@ -339,7 +342,7 @@ std::string get_ticket_expiration( std::string klist_ticket_info, CF_logger& cf_
 
     std::string log_str = "klist expires date = " + klist_expires_date + " " + klist_expires_time;
     std::cerr << log_str << std::endl;
-    cf_logger.logger( LOG_INFO, log_str.c_str() );
+    cf_logger.logger( LOG_INFO, log_str.c_str(), "" );
     return klist_expires_date + " " + klist_expires_time;
 }
 
@@ -534,7 +537,8 @@ std::string renew_gmsa_ticket( krb_ticket_info_t* krb_ticket, std::string domain
 
                 if ( status.first < 0 )
                 {
-                    cf_logger.logger( LOG_ERR, "ERROR %d: Cannot get user krb ticket", status );
+                    cf_logger.logger( LOG_ERR, "ERROR %d: Cannot get user krb ticket",
+                                      std::to_string( status.first ).c_str() );
                     std::cerr << Util::getCurrentTime() << '\t'
                               << "ERROR: Cannot get user krb ticket" << std::endl;
                 }

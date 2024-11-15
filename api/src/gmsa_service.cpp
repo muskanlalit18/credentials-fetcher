@@ -617,7 +617,8 @@ class CredentialsFetcherImpl final
                         {
                             err_msg = "ERROR :" + std::to_string( status.first ) +
                                       ": Cannot retrieve domainless user kerberos tickets";
-                            cf_logger.logger( LOG_ERR, err_msg.c_str(), status );
+                            cf_logger.logger( LOG_ERR, err_msg.c_str(),
+                                              std::to_string( status.first ).c_str() );
                             std::cerr << Util::getCurrentTime() << '\t' << err_msg << std::endl;
                             break;
                         }
@@ -644,7 +645,8 @@ class CredentialsFetcherImpl final
                                       ": Cannot get gMSA krb ticket";
                             std::cerr << Util::getCurrentTime() << '\t' << err_msg.c_str()
                                       << std::endl;
-                            cf_logger.logger( LOG_ERR, err_msg.c_str(), status.first );
+                            cf_logger.logger( LOG_ERR, err_msg.c_str(),
+                                              std::to_string( status.first ).c_str() );
                             break;
                         }
                         else
@@ -1198,7 +1200,7 @@ class CredentialsFetcherImpl final
                         if ( status.first < 0 )
                         {
                             cf_logger.logger( LOG_ERR, "Error %d: Cannot get machine krb ticket",
-                                              status );
+                                              std::to_string( status.first ).c_str() );
                             err_msg = "ERROR: cannot get machine krb ticket";
                             std::cerr << Util::getCurrentTime() << '\t' << err_msg << std::endl;
                             break;
@@ -1233,7 +1235,7 @@ class CredentialsFetcherImpl final
                             err_msg = "ERROR: Cannot get gMSA krb ticket";
                             std::cerr << Util::getCurrentTime() << '\t' << err_msg << std::endl;
                             cf_logger.logger( LOG_ERR, "ERROR: Cannot get gMSA krb ticket",
-                                              status );
+                                              std::to_string( status.first ).c_str() );
                             break;
                         }
                         else
@@ -1516,7 +1518,8 @@ class CredentialsFetcherImpl final
                         {
                             err_msg = "ERROR: " + std::to_string( status.first ) +
                                       ": cannot retrieve domainless user kerberos tickets";
-                            cf_logger.logger( LOG_ERR, err_msg.c_str(), status.first );
+                            cf_logger.logger( LOG_ERR, err_msg.c_str(),
+                                              std::to_string( status.first ).c_str() );
                             std::cerr << Util::getCurrentTime() << '\t' << err_msg << std::endl;
                             break;
                         }
@@ -1564,7 +1567,8 @@ class CredentialsFetcherImpl final
                             err_msg =
                                 "ERROR: Cannot get gMSA krb ticket " + gmsa_ticket_result.second;
                             std::cerr << Util::getCurrentTime() << '\t' << err_msg << std::endl;
-                            cf_logger.logger( LOG_ERR, err_msg.c_str(), gmsa_ticket_result.second );
+                            cf_logger.logger( LOG_ERR, err_msg.c_str(),
+                                              gmsa_ticket_result.second.c_str() );
                             break;
                         }
                         else
@@ -2438,7 +2442,8 @@ int ProcessCredSpecFile( std::string krb_files_dir, std::string credspec_filepat
         status = generate_krb_ticket_from_machine_keytab( krb_ticket_info->domain_name, cf_logger );
         if ( status.first < 0 )
         {
-            cf_logger.logger( LOG_ERR, "Error %d: Cannot get machine krb ticket", status );
+            cf_logger.logger( LOG_ERR, "Error %d: Cannot get machine krb ticket",
+                              std::to_string( status.first ).c_str() );
             delete krb_ticket_info;
 
             return EXIT_FAILURE;
@@ -2448,7 +2453,7 @@ int ProcessCredSpecFile( std::string krb_files_dir, std::string credspec_filepat
         if ( std::filesystem::exists( krb_file_path ) )
         {
             cf_logger.logger( LOG_INFO, "Deleting existing credential file directory %s",
-                              +krb_file_path.c_str() );
+                              krb_file_path.c_str() );
 
             std::filesystem::remove_all( krb_file_path );
         }
@@ -2470,7 +2475,8 @@ int ProcessCredSpecFile( std::string krb_files_dir, std::string credspec_filepat
         {
             err_msg = "ERROR: Cannot get gMSA krb ticket";
             std::cerr << Util::getCurrentTime() << '\t' << err_msg << std::endl;
-            cf_logger.logger( LOG_ERR, "ERROR: Cannot get gMSA krb ticket", status );
+            cf_logger.logger( LOG_ERR, "ERROR: Cannot get gMSA krb ticket",
+                              std::to_string( status.first ).c_str() );
         }
         else
         {
