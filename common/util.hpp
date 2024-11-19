@@ -845,7 +845,7 @@ class Util
         {
             std::string err_msg = "[Optional] DN from Secrets Manager = " + distinguished_name;
             std::cerr << err_msg << std::endl;
-            cf_logger.logger( LOG_ERR, err_msg.c_str(), "" );
+            cf_logger.logger( LOG_ERR, err_msg.c_str() );
         }
 
         std::transform( domain_name.begin(), domain_name.end(), domain_name.begin(),
@@ -893,14 +893,14 @@ class Util
         result = Util::is_kinit_cmd_present();
         if ( result.first != 0 )
         {
-            cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
+            cf_logger.logger( LOG_ERR, result.second.c_str() );
             return result;
         }
 
         result = Util::is_ldapsearch_cmd_present();
         if ( result.first != 0 )
         {
-            cf_logger.logger( LOG_ERR, result.second.c_str(), "" );
+            cf_logger.logger( LOG_ERR, result.second.c_str() );
             return result;
         }
 
@@ -960,12 +960,11 @@ class Util
         // truncate the hostname to the host name size limit defined by microsoft
         if ( host_name.length() > HOST_NAME_LENGTH_LIMIT )
         {
-            cf_logger.logger(
-                LOG_ERR,
-                "WARNING: %s:%d hostname exceeds 15 characters,"
-                "this can cause problems in getting kerberos tickets, please reduce "
-                "hostname length",
-                ( std::string( __func__ ) + " : " + std::to_string( __LINE__ ) ).c_str() );
+            std::string log_message = "WARNING: " + std::string( __func__ ) + " : " +
+                                      std::to_string( __LINE__ ) +
+                                      " hostname exceeds 15 characters, this can cause problems in "
+                                      "getting kerberos tickets, please reduce hostname length";
+            cf_logger.logger( LOG_ERR, log_message.c_str() );
             host_name = host_name.substr( 0, HOST_NAME_LENGTH_LIMIT );
             std::cerr << Util::getCurrentTime() << '\t'
                       << "INFO: hostname exceeds 15 characters this can "

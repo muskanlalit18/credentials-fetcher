@@ -89,9 +89,10 @@ class CF_logger
         log_level = _log_level;
     }
 
-    void write_log( const char* format, const char* message )
+    void write_log( const char* message )
     {
 
+        printf("format string: %s", format);
         const int max_log_len = 10 * 1024 * 1024; // 10 MB
 
         int fd = open( "/var/credentials-fetcher/logging/credentials-fetcher.log", O_RDWR );
@@ -118,9 +119,7 @@ class CF_logger
             struct tm* local_time = localtime( &current_time );
             char time_buffer[80];
             strftime( time_buffer, 80, "%Y-%m-%d %H:%M:%S", local_time );
-            fprintf( fp, "%s: ", time_buffer );
-            fprintf( fp, format, message );
-            fprintf( fp, "\n" );
+            fprintf( fp, "%s: %s \n", time_buffer, message );
             fclose( fp );
         }
         std::string log_buf = std::string( message );
@@ -129,14 +128,14 @@ class CF_logger
         close( fd );
     }
 
-    void logger( const int level, const char* fmt, const char* logs )
+    void logger( const int level, const char* logs )
     {
         if ( level >= log_level )
         {
-            std::string logFmt = fmt;
-            std::replace( logFmt.begin(), logFmt.end(), '\n', ' ' );
-            sd_journal_print( level, logFmt.c_str(), logs );
-            write_log( logFmt.c_str(), logs );
+            // std::string logFmt = fmt;
+            // std::replace( logFmt.begin(), logFmt.end(), '\n', ' ' );
+            sd_journal_print( level, "%s", logs );
+            write_log( logs );
         }
     }
 };
