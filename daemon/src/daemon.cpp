@@ -281,8 +281,9 @@ int main( int argc, const char* argv[] )
     }
     else
     {
-        log_message =
-            "grpc pthread is at " + std::string( static_cast<const char*>( grpc_pthread ) );
+        std::ostringstream address_stream;
+        address_stream << grpc_pthread;
+        log_message = "grpc pthread is at " + address_stream.str();
     }
     cf_daemon.cf_logger.logger( LOG_INFO, log_message.c_str() );
 
@@ -303,8 +304,9 @@ int main( int argc, const char* argv[] )
     }
     else
     {
-        log_message = "krb refresh pthread is at " +
-                      std::string( static_cast<const char*>( krb_refresh_pthread ) );
+        std::ostringstream address_stream;
+        address_stream << krb_refresh_pthread;
+        log_message = "krb refresh pthread is at " + address_stream.str();
     }
     cf_daemon.cf_logger.logger( LOG_INFO, log_message.c_str() );
 
