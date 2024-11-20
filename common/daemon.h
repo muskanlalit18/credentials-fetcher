@@ -91,8 +91,6 @@ class CF_logger
 
     void write_log( const char* message )
     {
-
-        printf("format string: %s", format);
         const int max_log_len = 10 * 1024 * 1024; // 10 MB
 
         int fd = open( "/var/credentials-fetcher/logging/credentials-fetcher.log", O_RDWR );

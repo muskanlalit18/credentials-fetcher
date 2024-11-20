@@ -1243,7 +1243,7 @@ class CredentialsFetcherImpl final
                         }
                         else
                         {
-                            log_message = "gMSA ticket is at " + gmsa_ticket_result.second.c_str();
+                            log_message = "gMSA ticket is at " + gmsa_ticket_result.second;
                             cf_logger.logger( LOG_INFO, log_message.c_str() );
                             std::cerr << Util::getCurrentTime() << '\t'
                                       << "INFO: gMSA ticket is at " << gmsa_ticket_result.second

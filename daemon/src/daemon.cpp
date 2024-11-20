@@ -185,7 +185,7 @@ int main( int argc, const char* argv[] )
 
     std::string log_msg = "Credentials-fetcher daemon has started running";
     std::cerr << log_msg << std::endl;
-    cf_daemon.cf_logger.logger( LOG_ERR, "%s", log_msg.c_str() );
+    cf_daemon.cf_logger.logger( LOG_ERR, log_msg.c_str() );
     std::cerr << "on request failures check logs located at " + cf_daemon.logging_dir << std::endl;
     ;
 
@@ -198,8 +198,9 @@ int main( int argc, const char* argv[] )
         {
             std::cerr << "Failed parsing environment variable " << getenv( ENV_CF_CRED_SPEC_FILE )
                       << std::endl;
-            cf_daemon.cf_logger.logger( LOG_ERR, "Failed parsing environment variable %s",
-                                        getenv( ENV_CF_CRED_SPEC_FILE ) );
+            std::string log_message = "Failed parsing environment variable " +
+                                      std::string( getenv( ENV_CF_CRED_SPEC_FILE ) );
+            cf_daemon.cf_logger.logger( LOG_ERR, log_message.c_str() );
 
             exit( EXIT_FAILURE );
         }
@@ -249,11 +250,11 @@ int main( int argc, const char* argv[] )
     // 1. Systemd - daemon
     // 2. grpc server
     // 3. timer to run every 45 min
-
+    std::string log_message;
     if ( !cf_daemon.cred_file.empty() )
     {
-        cf_daemon.cf_logger.logger( LOG_INFO, "Credential file exists %s",
-                                    cf_daemon.cred_file.c_str() );
+        log_message = "Credential file exists " + cf_daemon.cred_file;
+        cf_daemon.cf_logger.logger( LOG_INFO, log_message.c_str() );
 
         int specFileReturn = ProcessCredSpecFile( cf_daemon.krb_files_dir, cf_daemon.cred_file,
                                                   cf_daemon.cf_logger, cred_file_lease_id );
@@ -268,30 +269,44 @@ int main( int argc, const char* argv[] )
     pthread_status = create_pthread( grpc_thread_start, grpc_thread_name, -1 );
     if ( pthread_status.first < 0 )
     {
-        cf_daemon.cf_logger.logger( LOG_ERR, "Error %d: Cannot create pthreads",
-                                    std::to_string( pthread_status.first ).c_str() );
+        log_message =
+            "Error " + std::to_string( pthread_status.first ) + ": Cannot create pthreads";
+        cf_daemon.cf_logger.logger( LOG_ERR, log_message.c_str() );
         exit( EXIT_FAILURE );
     }
     grpc_pthread = pthread_status.second;
-    cf_daemon.cf_logger.logger( LOG_INFO, "grpc pthread is at %p",
-                                grpc_pthread == nullptr
-                                    ? "Warning: grpc_pthread is null"
-                                    : static_cast<const char*>( grpc_pthread ) );
+    if ( grpc_pthread == nullptr )
+    {
+        log_message = "Warning: grpc_pthread is null";
+    }
+    else
+    {
+        log_message =
+            "grpc pthread is at " + std::string( static_cast<const char*>( grpc_pthread ) );
+    }
+    cf_daemon.cf_logger.logger( LOG_INFO, log_message.c_str() );
 
     /* Create pthread for refreshing krb tickets */
     pthread_status =
         create_pthread( refresh_krb_tickets_thread_start, "krb_ticket_refresh_thread", -1 );
     if ( pthread_status.first < 0 )
     {
-        cf_daemon.cf_logger.logger( LOG_ERR, "Error %d: Cannot create pthreads",
-                                    std::to_string( pthread_status.first ).c_str() );
+        log_message =
+            "Error " + std::to_string( pthread_status.first ) + ": Cannot create pthreads";
+        cf_daemon.cf_logger.logger( LOG_ERR, log_message.c_str() );
         exit( EXIT_FAILURE );
     }
     krb_refresh_pthread = pthread_status.second;
-    cf_daemon.cf_logger.logger( LOG_INFO, "krb refresh pthread is at %p",
-                                grpc_pthread == nullptr
-                                    ? "Warning: krb_refresh_pthread is null"
-                                    : static_cast<const char*>( krb_refresh_pthread ) );
+    if ( krb_refresh_pthread == nullptr )
+    {
+        log_message = "Warning: krb_refresh_pthread is null";
+    }
+    else
+    {
+        log_message = "krb refresh pthread is at " +
+                      std::string( static_cast<const char*>( krb_refresh_pthread ) );
+    }
+    cf_daemon.cf_logger.logger( LOG_INFO, log_message.c_str() );
 
     cf_daemon.cf_logger.set_log_level( LOG_NOTICE );
 

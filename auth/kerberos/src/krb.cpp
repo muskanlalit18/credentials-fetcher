@@ -65,7 +65,8 @@ std::pair<int, std::string> generate_krb_ticket_from_machine_keytab( std::string
     result = Util::is_decode_exe_present();
     if ( result.first != 0 )
     {
-        cf_logger.logger( LOG_ERR, result.second.c_str() ) return result;
+        cf_logger.logger( LOG_ERR, result.second.c_str() );
+        return result;
     }
 
     /**

@@ -47,6 +47,7 @@ int krb_ticket_renew_handler( Daemon cf_daemon )
             {
                 std::list<krb_ticket_info_t*> krb_ticket_info_list =
                     read_meta_data_json( file_path );
+                std::string log_message;
 
                 // refresh the kerberos tickets for the service accounts, if tickets ready for
                 // renewal
@@ -69,9 +70,9 @@ int krb_ticket_renew_handler( Daemon cf_daemon )
                             if ( gmsa_ticket_result.first != 0 )
                             {
                                 std::pair<int, std::string> status;
-                                cf_logger.logger(
-                                    LOG_ERR, "ERROR: Cannot get gMSA krb ticket using account %s",
-                                    krb_ticket->service_account_name.c_str() );
+                                log_message = "ERROR: Cannot get gMSA krb ticket using account " +
+                                              krb_ticket->service_account_name;
+                                cf_logger.logger( LOG_ERR, log_message.c_str() );
                                 if ( domainless_user.find( "awsdomainlessusersecret" ) !=
                                      std::string::npos )
                                 {
@@ -87,10 +88,9 @@ int krb_ticket_renew_handler( Daemon cf_daemon )
                                 }
                                 if ( status.first < 0 )
                                 {
-                                    cf_logger.logger(
-                                        LOG_ERR, "Error %d: Cannot get machine krb ticket",
-                                        ( std::to_string( status.first ) + " " + status.second )
-                                            .c_str() );
+                                    log_message = "Error " + std::to_string( status.first ) +
+                                                  ": Cannot get machine krb ticket";
+                                    cf_logger.logger( LOG_ERR, log_message.c_str() );
                                 }
                                 else
                                 {
@@ -101,7 +101,8 @@ int krb_ticket_renew_handler( Daemon cf_daemon )
                     }
                     else
                     {
-                        cf_logger.logger( LOG_INFO, "gMSA ticket is at %s", krb_cc_name.c_str() );
+                        log_message = "gMSA ticket is at " + krb_cc_name;
+                        cf_logger.logger( LOG_INFO, log_message.c_str() );
                     }
                 }
             }
@@ -109,11 +110,11 @@ int krb_ticket_renew_handler( Daemon cf_daemon )
         catch ( const std::exception& ex )
         {
             std::string log_str = Util::getCurrentTime() + '\t' + "ERROR: '" + ex.what() + "'!\n";
-            cf_logger.logger( LOG_ERR, log_str.c_str(), "" );
+            cf_logger.logger( LOG_ERR, log_str.c_str() );
             std::cerr << log_str << std::endl;
             log_str = Util::getCurrentTime() + '\t' + "ERROR: failed to run ticket renewal";
             std::cerr << log_str << std::endl;
-            cf_logger.logger( LOG_ERR, log_str.c_str(), "" );
+            cf_logger.logger( LOG_ERR, log_str.c_str() );
             break;
         }
     }
