@@ -222,12 +222,24 @@ int main( int argc, const char* argv[] )
      */
     cf_daemon.domain_name = CF_TEST_DOMAIN_NAME;
     cf_daemon.gmsa_account_name = CF_TEST_GMSA_ACCOUNT;
+    std::string log_message;
 
     std::cerr << "krb_files_dir = " << cf_daemon.krb_files_dir << std::endl;
-    // std::cerr << "cred_file = " << cf_daemon.cred_file <<  " (lease id: " << cred_file_lease_id
-    //    << ")" << std::endl;
+    log_message = "krb_files_dir = " + cf_daemon.krb_files_dir;
+    cf_daemon.cf_logger.logger( LOG_ERR, log_message.c_str() );
+
+    std::cerr << "cred_file = " << cf_daemon.cred_file << " (lease id: " << cred_file_lease_id
+              << ")" << std::endl;
+    log_message = "cred_file = " + cf_daemon.cred_file + " (lease id: " + cred_file_lease_id + ")";
+    cf_daemon.cf_logger.logger( LOG_ERR, log_message.c_str() );
+
     std::cerr << "logging_dir = " << cf_daemon.logging_dir << std::endl;
+    log_message = "logging_dir = " + cf_daemon.logging_dir;
+    cf_daemon.cf_logger.logger( LOG_ERR, log_message.c_str() );
+
     std::cerr << "unix_socket_dir = " << cf_daemon.unix_socket_dir << std::endl;
+    log_message = "unix_socket_dir = " + cf_daemon.unix_socket_dir;
+    cf_daemon.cf_logger.logger( LOG_ERR, log_message.c_str() );
 
     if ( cf_daemon.run_diagnostic )
     {
@@ -250,7 +262,6 @@ int main( int argc, const char* argv[] )
     // 1. Systemd - daemon
     // 2. grpc server
     // 3. timer to run every 45 min
-    std::string log_message;
     if ( !cf_daemon.cred_file.empty() )
     {
         log_message = "Credential file exists " + cf_daemon.cred_file;
