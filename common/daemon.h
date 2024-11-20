@@ -130,8 +130,6 @@ class CF_logger
     {
         if ( level >= log_level )
         {
-            // std::string logFmt = fmt;
-            // std::replace( logFmt.begin(), logFmt.end(), '\n', ' ' );
             sd_journal_print( level, "%s", logs );
             write_log( logs );
         }
