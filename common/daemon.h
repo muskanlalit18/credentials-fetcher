@@ -89,15 +89,9 @@ class CF_logger
         log_level = _log_level;
     }
 
-    void write_log( const char* format, ... )
+    void write_log( const char* message )
     {
         const int max_log_len = 10 * 1024 * 1024; // 10 MB
-
-        char buffer[256];
-        va_list args;
-        va_start( args, format );
-        vsnprintf( buffer, 255, format, args );
-        va_end( args );
 
         int fd = open( "/var/credentials-fetcher/logging/credentials-fetcher.log", O_RDWR );
         struct stat st;
@@ -123,31 +117,23 @@ class CF_logger
             struct tm* local_time = localtime( &current_time );
             char time_buffer[80];
             strftime( time_buffer, 80, "%Y-%m-%d %H:%M:%S", local_time );
-            fprintf( fp, "%s: ", time_buffer );
-            fprintf( fp, format, buffer );
-            fprintf( fp, "\n" );
+            fprintf( fp, "%s: %s \n", time_buffer, message );
             fclose( fp );
         }
-        std::string log_buf = std::string( buffer, strlen( buffer ) );
+        std::string log_buf = std::string( message );
         log_ring_buffer[log_buffer_count] = log_buf;
         log_buffer_count = ( log_buffer_count + 1 ) % MAX_LOG_BUFFER_COUNT;
         close( fd );
     }
 
-    template <typename... Logs> void logger( const int level, const char* fmt, Logs... logs )
+    void logger( const int level, const char* logs )
     {
         if ( level >= log_level )
         {
-            std::string logFmt = fmt;
-            for ( int i = 0; logFmt[i] != '\0'; ++i )
-            {
-                if ( logFmt[i] == '\n' )
-                {
-                    logFmt[i] = ' '; // Replace '\n' with space
-                }
-            }
-            sd_journal_print( level, logFmt.c_str(), logs... );
-            write_log( logFmt.c_str(), logs... );
+            // std::string logFmt = fmt;
+            // std::replace( logFmt.begin(), logFmt.end(), '\n', ' ' );
+            sd_journal_print( level, "%s", logs );
+            write_log( logs );
         }
     }
 };

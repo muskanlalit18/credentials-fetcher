@@ -960,11 +960,11 @@ class Util
         // truncate the hostname to the host name size limit defined by microsoft
         if ( host_name.length() > HOST_NAME_LENGTH_LIMIT )
         {
-            cf_logger.logger( LOG_ERR,
-                              "WARNING: %s:%d hostname exceeds 15 characters,"
-                              "this can cause problems in getting kerberos tickets, please reduce "
-                              "hostname length",
-                              __func__, __LINE__ );
+            std::string log_message = "WARNING: " + std::string( __func__ ) + " : " +
+                                      std::to_string( __LINE__ ) +
+                                      " hostname exceeds 15 characters, this can cause problems in "
+                                      "getting kerberos tickets, please reduce hostname length";
+            cf_logger.logger( LOG_ERR, log_message.c_str() );
             host_name = host_name.substr( 0, HOST_NAME_LENGTH_LIMIT );
             std::cerr << Util::getCurrentTime() << '\t'
                       << "INFO: hostname exceeds 15 characters this can "
