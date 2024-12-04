@@ -1,0 +1,12 @@
+*:CONTRIBUTING.md
+*:README.md
+*:NOTICE
+*:LICENSE
+missingIncludeSystem:*
+missingInclude:*
+unmatchedSuppression:*
+ConfigurationNotChecked:*
+cstyleCast:daemon/src/daemon.cpp
+passedByValue:*
+useStlAlgorithm:auth/kerberos/src/krb.cpp
+useInitializationList:api/src/gmsa_service.cpp
