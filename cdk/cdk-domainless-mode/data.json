@@ -16,5 +16,8 @@
   "secret_name": "aws/directoryservice/ActiveDirectory1/gmsa",
   "task_definition_template_name": "CredentialsFetcherTaskDefinitiontemplate",
   "cluster_name": "Credentials-fetcher-ecs-load-test",
-  "vpc_name": "Credentials-fetcher-AD-Stack-vpc"
+  "vpc_name": "Credentials-fetcher-AD-Stack-vpc",
+  "ecr_repo_name": "my-ecr-repo",
+  "docker_image_tag": "latest",
+  "dockerfile_path": "./Dockerfile"
 }

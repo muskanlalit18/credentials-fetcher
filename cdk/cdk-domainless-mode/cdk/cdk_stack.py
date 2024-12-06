@@ -19,9 +19,9 @@ import aws_cdk.aws_ssm as ssm
 from aws_cdk import aws_route53resolver as route53resolver
 from aws_cdk import Duration as duration
 import uuid
-import json
 import boto3
-import json
+import docker
+import os
 
 class CdkStack(Stack):
 
@@ -392,3 +392,40 @@ class CdkStack(Stack):
         task_definition.node.add_dependency(self.cfn_microsoft_AD)
 
         return task_definition
+
+    def build_push_dockerfile_to_ecr(self, dockerfile_path, repository_name, region, tag='latest'):
+        ecr_client = boto3.client('ecr', region_name=region)
+        
+        # Create ECR repository if it doesn't exist
+        try:
+            ecr_client.create_repository(repositoryName=repository_name)
+        except ecr_client.exceptions.RepositoryAlreadyExistsException:
+            pass
+
+        # Get the repository URI
+        response = ecr_client.describe_repositories(repositoryNames=[repository_name])
+        repository_uri = response['repositories'][0]['repositoryUri']
+
+        # Get ECR login token
+        token = ecr_client.get_authorization_token()
+        username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode().split(':')
+        registry = token['authorizationData'][0]['proxyEndpoint']
+
+        # Build Docker image
+        docker_client = docker.from_env()
+        image, build_logs = docker_client.images.build(
+            path=os.path.dirname(dockerfile_path),
+            dockerfile=os.path.basename(dockerfile_path),
+            tag=f"{repository_uri}:{tag}"
+        )
+
+        # Login to ECR
+        docker_client.login(username=username, password=password, registry=registry)
+
+        # Push image to ECR
+        push_logs = docker_client.images.push(repository_uri, tag=tag)
+
+        # Construct the full image URI
+        image_uri = f"{repository_uri}:{tag}"
+
+        return image_uri

@@ -33,6 +33,9 @@ password = data["password"]
 secret_name = data["secret_name"]
 task_definition_template_name = data["task_definition_template_name"]
 cluster_name = data["cluster_name"]
+docker_image_tag = data["docker_image_tag"]
+dockerfile_path = data["dockerfile_path"]
+ecr_repo_name = data["ecr_repo_name"]
 
 app = cdk.App()
 
@@ -68,5 +71,7 @@ ecs_cluster = cdk_stack.create_ecs_cluster( cluster_name,
 ecs_cluster.node.add_dependency(windows_instance)
 
 task_definition = cdk_stack.create_task_definition(task_definition_template_name=task_definition_template_name)
+
+docker_image_uri = cdk_stack.build_push_dockerfile_to_ecr(dockerfile_path, ecr_repo_name, aws_region, docker_image_tag)
 
 app.synth()
