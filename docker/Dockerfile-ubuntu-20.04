@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as base
+FROM public.ecr.aws/ubuntu/ubuntu:20.04 as base
 ARG TIME_ZONE
 RUN if [ -z "${TIME_ZONE}" ] ; then exit 1; fi
 
