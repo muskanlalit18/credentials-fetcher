@@ -248,7 +248,7 @@ class CdkStack(Stack):
                                 security_group : str):
 
         machine_image = ecs.EcsOptimizedImage.amazon_linux2023(hardware_type=ecs.AmiHardwareType.STANDARD)
-        instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.XLARGE)
+        instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.XLARGE)
         role = iam.Role(self, "Role", role_name="ecs-instance-role", assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"))
 
         role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonEC2ContainerServiceforEC2Role"))
