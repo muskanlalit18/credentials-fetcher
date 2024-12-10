@@ -26,7 +26,7 @@ windows_instance_tag = data["windows_instance_tag"]
 linux_instance_tag = data["linux_instance_tag"]
 key_name = data["key_pair_name"]
 number_of_gmsa_accounts = data["number_of_gmsa_accounts"]
-empty_s3_bucket = data["s3_bucket"]
+s3_bucket = data["s3_bucket"]
 app_name = data["stack_name"]
 username = data["username"]
 password = data["password"]
@@ -56,7 +56,7 @@ windows_instance = cdk_stack.launch_windows_instance(instance_tag = windows_inst
                           domain_name = directory_name,
                           key_name = key_name,
                           number_of_gmsa_accounts = number_of_gmsa_accounts,
-                          s3_bucket_name = empty_s3_bucket
+                          s3_bucket_name = s3_bucket
                         )
 
 windows_instance.node.add_dependency(cfn_microsoft_AD)
@@ -68,7 +68,7 @@ ecs_cluster = cdk_stack.create_ecs_cluster( cluster_name,
                                             key_pair=cdk_stack.key_pair,
                                             number_of_gmsa_accounts=number_of_gmsa_accounts,
                                             vpc = cdk_stack.vpc,
-                                            security_group=cdk_stack.security_group, rpm_file=rpm_file, s3_bucket=empty_s3_bucket)
+                                            security_group=cdk_stack.security_group, rpm_file=rpm_file, s3_bucket=s3_bucket)
 ecs_cluster.node.add_dependency(windows_instance)
 
 task_definition = cdk_stack.create_task_definition(task_definition_template_name=task_definition_template_name)
