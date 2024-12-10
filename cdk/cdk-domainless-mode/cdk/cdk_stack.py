@@ -245,7 +245,7 @@ class CdkStack(Stack):
                                 key_pair: ec2.KeyPair,
                                 number_of_gmsa_accounts: int,
                                 vpc : str,
-                                security_group : str):
+                                security_group : str, rpm_file:str, s3_bucket:str):
 
         machine_image = ecs.EcsOptimizedImage.amazon_linux2023(hardware_type=ecs.AmiHardwareType.STANDARD)
         instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.XLARGE)
@@ -259,7 +259,7 @@ class CdkStack(Stack):
         # add role for Directory Service
         role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AWSDirectoryServiceFullAccess"))
 
-        user_data_script = self.setup_linux_userdata(instance_tag, password, domain_name, key_pair.key_pair_name, number_of_gmsa_accounts)
+        user_data_script = self.setup_linux_userdata(instance_tag, password, domain_name, key_pair.key_pair_name, number_of_gmsa_accounts, rpm_file, s3_bucket)
         user_data = ec2.UserData.for_linux()
         user_data.add_commands(user_data_script)
         #user_data = cdk.Fn.base64(user_data.render())
@@ -298,13 +298,14 @@ class CdkStack(Stack):
     def setup_linux_userdata (self, instance_tag: str, password: str,
                                 domain_name: str,
                                 key_name: str,
-                                number_of_gmsa_accounts: int):
+                                number_of_gmsa_accounts: int, rpm_file: str, s3_bucket: int):
         #In instance, 'cat /var/lib/cloud/instance/user-data.txt'
         # get random uuid string
         random_uuid_str =  str(uuid.uuid4())
         ecs_cluster_name="ecs-load-test-" + random_uuid_str
         user_data_script = '''
             echo "ECS_GMSA_SUPPORTED=true" >> /etc/ecs/ecs.config
+            aws s3 cp s3://BUCKET_NAME/RPM_FILE .
             dnf install -y dotnet
             dnf install -y realmd
             dnf install -y oddjob
@@ -313,12 +314,15 @@ class CdkStack(Stack):
             dnf install -y adcli
             dnf install -y krb5-workstation
             dnf install -y samba-common-tools
-            dnf install -y credentials-fetcher
+            dnf install -y RPM_FILE
             systemctl enable credentials-fetcher
             systemctl start credentials-fetcher
             systemctl enable --now --no-block ecs.service
         user_data_script += "echo ECS_CLUSTER=" + ecs_cluster_name + " >> /etc/ecs/ecs.config"
         '''
+        user_data_script = user_data_script.replace('BUCKET_NAME', s3_bucket)
+        user_data_script = user_data_script.replace('RPM_FILE', rpm_file)
+        
         return user_data_script
 
     # Save json values in secrets manager

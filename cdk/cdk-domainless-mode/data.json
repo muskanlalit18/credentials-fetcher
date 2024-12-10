@@ -1,14 +1,14 @@
 {
   "stack_name": "Credentials-fetcher-AD-Stack",
-  "aws_region": "us-west-1",
-  "prefix_list": "pl-XXXXXXXX",
+  "aws_region": "us-west-2",
+  "prefix_list": "pl-f8a64391",
   "domain_admin_password": "Qn:51eJsORJNL@~{HY@?",
-  "key_pair_name": "samiull-sfo",
+  "key_pair_name": "muskanl-cf",
   "directory_name": "ActiveDirectory1.com",
   "netbios_name" : "ActiveDirectory1",
   "windows_instance_tag": "ActiveDirectoryManagementInstance",
   "linux_instance_tag": "CredentialsFetcherLinuxInstance",
-  "s3_bucket": "credentials-fetcher-pre-created-bucket",
+  "s3_bucket": "muskanl-credentials-fetcher-pre-created-bucket",
   "number_of_gmsa_accounts": 10,
   "aws_profile_name": "default",
   "username": "StandardUser01",
@@ -19,5 +19,6 @@
   "vpc_name": "Credentials-fetcher-AD-Stack-vpc",
   "ecr_repo_name": "my-ecr-repo",
   "docker_image_tag": "latest",
-  "dockerfile_path": "./Dockerfile"
+  "dockerfile_path": "./Dockerfile",
+  "rpm_file": "credentials-fetcher-1.3.62-0.amzn2023.x86_64.rpm"
 }
