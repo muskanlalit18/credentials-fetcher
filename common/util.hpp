@@ -603,7 +603,8 @@ class Util
     {
         std::string cmd;
         std::pair<int, std::string> ldap_search_result;
-
+        // -N: Do not use reverse DNS to canonicalize SASL host name.
+        // With this flag, ldapsearch uses the IP address directly for identification purposes, rather than trying to resolve it to a hostname.
         cmd = std::string( "ldapsearch -o ldif_wrap=no -LLL -Y GSSAPI -H ldap://" ) + fqdn;
         cmd += std::string( " -b '" ) + distinguished_name + std::string( "' " ) + search_string;
         cmd += std::string( " -N" );
