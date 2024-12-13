@@ -28,7 +28,7 @@ RUN cd /root && wget https://packages.microsoft.com/config/ubuntu/20.04/packages
     && apt remove 'dotnet*' 'aspnetcore*' 'netstandard*' \
     && rm /etc/apt/sources.list.d/microsoft-prod.list \
     && apt update \
-    && apt-get install -y dotnet-sdk-6.0
+    && apt-get install -y dotnet-sdk-8.0
 
 #RUN git clone -b credentials-fetcher-credfile https://github.com/fordth/credentials-fetcher /root/credentials-fetcher \
 RUN git clone https://github.com/aws/credentials-fetcher /root/credentials-fetcher \
