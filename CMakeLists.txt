@@ -60,8 +60,8 @@ endif()
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(config)
-add_subdirectory(config)
+set(configuration)
+add_subdirectory(configuration)
 set(api)
 add_subdirectory(api)
 set(renewal)
@@ -91,7 +91,7 @@ if (NOT CF_TEST_GMSA_ACCOUNT)
     set(CF_TEST_GMSA_ACCOUNT "webapp01")
 endif()
 
-configure_file(${CMAKE_SOURCE_DIR}/config/config.h.in
+configure_file(${CMAKE_SOURCE_DIR}/configuration/config.h.in
     ${CMAKE_BINARY_DIR}/config.h @ONLY)
 
 
@@ -138,7 +138,7 @@ else()
             )
 endif()
 
-set(sources ${daemon} ${config} ${renewal})
+set(sources ${daemon} ${configuration} ${renewal})
 
 add_executable(credentials-fetcherd ${sources})
 
