@@ -606,7 +606,7 @@ class Util
 
         cmd = std::string( "ldapsearch -o ldif_wrap=no -LLL -Y GSSAPI -H ldap://" ) + fqdn;
         cmd += std::string( " -b '" ) + distinguished_name + std::string( "' " ) + search_string;
-	    cmd += std::string( " -N" );
+        cmd += std::string( " -N" );
         std::cerr << Util::getCurrentTime() << '\t' << "INFO: " << cmd << std::endl;
         std::cerr << cmd << std::endl;
 
