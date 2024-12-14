@@ -22,14 +22,9 @@ BuildRequires:  systemd-rpm-macros grpc-plugins
 BuildRequires:  aws-sdk-cpp-devel aws-sdk-cpp aws-sdk-cpp-static
 %endif
 
-# fedora41 does not support .NET6
-%if 0%{?fedora} >= 41
 BuildRequires:  dotnet-sdk-8.0
 Requires:       dotnet-runtime-8.0
-%else
-BuildRequires:  dotnet-sdk-6.0
-Requires:       dotnet-runtime-6.0
-%endif
+
 
 Requires: bind-utils openldap openldap-clients awscli jsoncpp
 # No one likes you i686
