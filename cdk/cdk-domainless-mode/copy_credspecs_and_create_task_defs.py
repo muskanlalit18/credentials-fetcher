@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 
 # Open the input file
 with open('data.json', 'r') as file:
@@ -9,7 +10,7 @@ with open('data.json', 'r') as file:
 directory_name = data["directory_name"]
 netbios_name = data["netbios_name"]
 number_of_gmsa_accounts = data["number_of_gmsa_accounts"]
-s3_bucket = data["s3_bucket"]
+s3_bucket = os.environ["S3_PREFIX"] + data["s3_bucket_suffix"]
 task_definition_template_name = data["task_definition_template_name"]
 stack_name = data["stack_name"]
 
