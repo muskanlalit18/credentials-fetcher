@@ -63,9 +63,7 @@ fi
 
 cd "$USER_DIR"
 
-git clone --recurse-submodules -b v1.58.0 https://github.com/grpc/grpc \ 
-    && mkdir -p grpc/build && cd grpc/build && cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_CXX_STANDARD=17 ../  \ 
-    && make -j4 && make install
+git clone --recurse-submodules -b v1.58.0 https://github.com/grpc/grpc && mkdir -p grpc/build && cd grpc/build && cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_CXX_STANDARD=17 ../  && make -j4 && make install
 
 cd "$USER_DIR"
 
@@ -103,10 +101,11 @@ else
     echo "Microsoft packages successfully installed. Please follow the instructions in the setup doc to clone the repo and build it"
 fi
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
 cd "$USER_DIR"
 git clone -b dotnet-upgrade https://github.com/bhallasaksham/credentials-fetcher.git # update branch as needed
 mkdir -p credentials-fetcher/build 
 cd credentials-fetcher/build
 cmake ../ && make -j4 && make install
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
