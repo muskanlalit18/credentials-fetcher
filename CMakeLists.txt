@@ -194,8 +194,11 @@ endif()
 add_custom_command(
         TARGET credentials-fetcherd
         PRE_LINK
-        COMMAND bash -c  "CURR_DIR=$PWD && echo $CURR_DIR && cd ${CMAKE_CURRENT_SOURCE_DIR}/auth/kerberos/src/utf16_decode && ./build-using-csc.sh Program.cs && cp Program.exe $CURR_DIR/credentials_fetcher_utf16_private.exe && cp Program.runtimeconfig.json $CURR_DIR/credentials_fetcher_utf16_private.runtimeconfig.json"
-        VERBATIM)
+        COMMAND bash -c "CURR_DIR=$PWD && echo $CURR_DIR && cd
+${CMAKE_CURRENT_SOURCE_DIR}/auth/kerberos/src/utf16_decode &&
+./build-using-native-aot.sh
+&& cp bin/Release/net8.0/linux-x64/publish/utf16_decode
+$CURR_DIR/credentials_fetcher_utf16_private"        VERBATIM)
 
 target_include_directories(credentials-fetcherd PUBLIC common)
 

@@ -37,8 +37,8 @@ apt-get update \
         libjsoncpp-dev libgtest-dev pip python3.10-venv \
         libsasl2-modules-gssapi-mit:amd64 ldap-utils krb5-config awscli
 
--b release \
-git clone https://github.com/Kitware/CMake.git 
+
+git clone https://github.com/Kitware/CMake.git -b release \
     && cd CMake && ./configure && make -j4 &&  pwd && make install
 
 if [ $? -ne 0 ]; then
@@ -50,8 +50,8 @@ fi
 
 cd "$USER_DIR"
 
--b krb5-1.21.2-final \
-git clone https://github.com/krb5/krb5.git 
+
+git clone https://github.com/krb5/krb5.git -b krb5-1.21.2-final \
      && cd krb5/src && autoconf && autoreconf && ./configure && make -j4 && make install
 
 if [ $? -ne 0 ]; then
@@ -63,11 +63,9 @@ fi
 
 cd "$USER_DIR"
 
-git clone --recurse-submodules -b\
- v1.58.0 https://github.com/grpc/grpc 
-  && mkdir -p grpc/build && cd grpc/build \
- && cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_CXX_STANDARD=17 ../ \
- && make -j4 && make install
+git clone --recurse-submodules -b v1.58.0 https://github.com/grpc/grpc \ 
+    && mkdir -p grpc/build && cd grpc/build && cmake -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_CXX_STANDARD=17 ../  \ 
+    && make -j4 && make install
 
 cd "$USER_DIR"
 
@@ -84,14 +82,13 @@ fi
     
 cd "$USER_DIR"
 
--O packages-microsoft-prod.deb \
-wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb 
-&& DEBIAN_FRONTEND=noninteractive dpkg -i packages-microsoft-prod.deb \
-&& rm packages-microsoft-prod.deb \
-&& apt-get remove -y 'dotnet*' 'aspnetcore*' 'netstandard*' \
-&& rm /etc/apt/sources.list.d/microsoft-prod.list \
-&& apt-get update -y \
-&& apt-get install -y dotnet-sdk-8.0
+wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && DEBIAN_FRONTEND=noninteractive dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get remove -y 'dotnet*' 'aspnetcore*' 'netstandard*' \
+    && rm /etc/apt/sources.list.d/microsoft-prod.list \
+    && apt-get update -y \
+    && apt-get install -y dotnet-sdk-8.0
 
 mkdir -p /usr/lib64/glib-2.0/ && ln -s '/usr/lib/x86_64-linux-gnu/glib-2.0/include/' '/usr/lib64/glib-2.0/include' && ln -s '/usr/include/jsoncpp/json/' '/usr/include/json'
 
@@ -107,7 +104,7 @@ else
 fi
 
 cd "$USER_DIR"
-git clone -b mainline https://github.com/aws/credentials-fetcher.git # update branch as needed
+git clone -b dotnet-upgrade https://github.com/bhallasaksham/credentials-fetcher.git # update branch as needed
 mkdir -p credentials-fetcher/build 
 cd credentials-fetcher/build
 cmake ../ && make -j4 && make install
