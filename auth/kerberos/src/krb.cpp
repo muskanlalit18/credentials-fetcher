@@ -12,7 +12,7 @@ const std::vector<char> invalid_characters = { '&',  '|', ';', ':',  '$', '*', '
                                                '>',  '!', ' ', '\\', '.', ']', '[', '+',
                                                '\'', '`', '~', '}',  '{', '"', ')', '(' };
 
-const std::string install_path_for_decode_exe = "/usr/sbin/credentials_fetcher_utf16_private.exe";
+const std::string install_path_for_decode_exe = "/usr/sbin/credentials_fetcher_utf16_private";
 
 const std::string install_path_for_aws_cli = "/usr/bin/aws";
 
