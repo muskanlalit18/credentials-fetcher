@@ -1,6 +1,6 @@
 %global major_version 1
 %global minor_version 3
-%global patch_version 6
+%global patch_version 64
  
 # For handling bump release by rpmdev-bumpspec and mass rebuild
 %global baserelease 0
@@ -12,7 +12,7 @@ Summary:        credentials-fetcher is a daemon that refreshes tickets or tokens
  
 License:        Apache-2.0
 URL:            https://github.com/aws/credentials-fetcher
-Source0:        credentials-fetcher-v.1.3.6.tar.gz
+Source0:        credentials-fetcher-v.1.3.64.tar.gz
 
 BuildRequires:  cmake3 make chrpath openldap-clients grpc-devel gcc-c++ glib2-devel jsoncpp-devel
 BuildRequires:  openssl-devel zlib-devel protobuf-devel re2-devel krb5-devel systemd-devel
@@ -23,8 +23,6 @@ BuildRequires:  aws-sdk-cpp-devel aws-sdk-cpp aws-sdk-cpp-static
 %endif
 
 BuildRequires:  dotnet-sdk-8.0
-Requires:       dotnet-runtime-8.0
-
 
 Requires: bind-utils openldap openldap-clients awscli jsoncpp
 # No one likes you i686
@@ -67,7 +65,6 @@ ctest3
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 %doc CONTRIBUTING.md NOTICE README.md
 %attr(0700, -, -) %{_sbindir}/credentials_fetcher_utf16_private.exe
-%attr(0700, -, -) %{_sbindir}/credentials_fetcher_utf16_private.runtimeconfig.json
 %attr(0755, -, -) %{_sbindir}/krb5.conf
 
 %changelog
