@@ -104,7 +104,7 @@ fi
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
 cd "$USER_DIR"
-git clone -b dotnet-upgrade https://github.com/bhallasaksham/credentials-fetcher.git # update branch as needed
+git clone -b dev https://github.com/aws/credentials-fetcher.git # update branch as needed
 mkdir -p credentials-fetcher/build 
 cd credentials-fetcher/build
 cmake ../ && make -j4 && make install
