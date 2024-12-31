@@ -11,6 +11,12 @@ Runs a couple of tasks in the ECS-optimized Linux instance using gMSA in domainl
 Disclaimer
 This CDK and scripts are only for test, please modify as needed.
 
+Create the following environment variables: 
+1. AWS_REGION
+2. S3_PREFIX
+3. KEY_PAIR_NAME
+4. PREFIX_LIST
+
 Pre-requisites
 Please take a look at data.json for default values.
 1) Create secret in Secrets Manager as per https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linux-gmsa-setup with the following values:
@@ -19,7 +25,7 @@ Please take a look at data.json for default values.
     Secret key  Secret value
     username    standarduser01
     password    p@ssw0rd
-    domainName  activedirectory1.com
+    domainName  contoso.com
     ```
 2) 'default' AWS profile with administrator access is needed, a separate/burner AWS account would suffice.
 
