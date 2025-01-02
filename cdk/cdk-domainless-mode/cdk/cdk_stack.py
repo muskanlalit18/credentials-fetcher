@@ -2,8 +2,7 @@ from aws_cdk import (
     # Duration,
     Stack,
     # aws_sqs as sqs,
-    aws_rds as rds,
-    Token
+    aws_rds as rds
 )
 from constructs import Construct
 import aws_cdk.aws_directoryservice as directoryservice
@@ -155,20 +154,6 @@ class CdkStack(Stack):
                                     edition="Standard",
                                     enable_sso=False
                                 )
-        
-        sg_id = Token.as_string(self.cfn_microsoft_AD.attr_security_group_id)
-        print(sg_id)
-        imported_security_group = ec2.SecurityGroup.from_security_group_id(
-            self,
-            "ImportedSecurityGroup",
-            security_group_id=sg_id,
-            allow_all_outbound=True  # This is optional and defaults to true
-        )
-        self.security_group.add_ingress_rule(
-            peer=imported_security_group,
-            connection=ec2.Port.all_traffic(),
-            description="Allow all traffic from directory service"
-        )
 
 
         self.cfn_microsoft_AD.node.add_dependency(self.vpc)

@@ -15,8 +15,6 @@ with open('data.json', 'r') as file:
     # Load the JSON data
     data = json.load(file)
 
-#print(data)
-
 tag = cdk.Tag("Name", "Test Credentials-fetcher in Domainless mode")
 aws_region = os.environ["AWS_REGION"]
 prefix_list = os.environ["PREFIX_LIST"]
