@@ -12,7 +12,7 @@ const std::vector<char> invalid_characters = { '&',  '|', ';', ':',  '$', '*', '
                                                '>',  '!', ' ', '\\', '.', ']', '[', '+',
                                                '\'', '`', '~', '}',  '{', '"', ')', '(' };
 
-const std::string install_path_for_decode_exe = "/usr/sbin/credentials_fetcher_utf16_private.exe";
+const std::string install_path_for_decode_exe = "/usr/sbin/credentials_fetcher_utf16_private";
 
 const std::string install_path_for_aws_cli = "/usr/bin/aws";
 
@@ -213,7 +213,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
     std::string default_principal = "'" + gmsa_account_name + "$'" + "@" + domain_name;
 
     /* Pipe password to the utf16 decoder and kinit */
-    std::string kinit_cmd = std::string( "dotnet " ) + std::string( install_path_for_decode_exe ) +
+    std::string kinit_cmd = std::string( install_path_for_decode_exe ) +
                             std::string( " | kinit " ) + std::string( " -c " ) + krb_cc_name +
                             " -V " + default_principal;
     std::cerr << Util::getCurrentTime() << '\t' << "INFO:" << kinit_cmd << std::endl;
