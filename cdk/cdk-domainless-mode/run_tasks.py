@@ -1,6 +1,21 @@
 import boto3
 import json
 
+"""
+
+This script automates the deployment of ECS tasks based on configuration from a JSON file. It performs the following operations:
+
+1. Identifies the specified VPC using its name tag.
+2. Retrieves subnet IDs within the identified VPC.
+3. Obtains security group information for the VPC.
+4. Lists ECS task definitions and filters for a specific template name.
+5. Deploys an ECS task using the matched task definition, with the following specifications:
+    - Runs in the specified ECS cluster
+    - Uses EC2 launch type
+    - Configures networking using the retrieved subnet and security group information
+
+"""
+
 # Open the input file
 with open('data.json', 'r') as file:
     # Load the JSON data

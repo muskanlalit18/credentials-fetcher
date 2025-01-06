@@ -2,6 +2,26 @@ import boto3
 import json
 import os
 
+"""
+AWS ECS Task Definition Update and Execution Script
+
+This script automates the process of updating and running ECS (Elastic Container Service) tasks. It performs the following operations:
+
+Task Definition Management:
+
+Identifies all task definition families matching a specified pattern.
+For each task definition family: 
+a. Updates the task definition with a new Docker image URI from ECR. 
+b. Registers a new revision of the task definition with ECS.
+
+Task Execution:
+
+For each updated task definition: 
+a. Attempts to run a new task in the specified ECS cluster. 
+b. Configures the task with the appropriate network settings (subnets and security group).
+
+"""
+
 def update_task_definition_image(task_definition_family, repository_name, tag, region):
     ecs_client = boto3.client('ecs', region_name=region)
     ecr_client = boto3.client('ecr', region_name=region)
@@ -83,6 +103,9 @@ try:
     with open('data.json', 'r') as file:
         data = json.load(file)
 
+    def get_value(key):
+        return os.environ.get(key, data.get(key.lower()))
+
     directory_name = data["directory_name"]
     netbios_name = data["netbios_name"]
     number_of_gmsa_accounts = data["number_of_gmsa_accounts"]
@@ -91,7 +114,7 @@ try:
     vpc_name = data["vpc_name"]
     task_definition_template_name = data["task_definition_template_name"]
     repository_name = data["ecr_repo_name"]
-    region = os.environ["AWS_REGION"]
+    region = get_value("AWS_REGION")
     tag = data["docker_image_tag"]
 
     ecs_client = boto3.client('ecs', region_name=region)

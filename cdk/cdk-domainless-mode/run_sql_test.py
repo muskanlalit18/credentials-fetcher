@@ -3,14 +3,27 @@ import time
 import os
 import json
 
+"""
+This script executes a shell script on the Linux instance via SSM that: 
+a. Lists Docker containers 
+b. Identifies a specific Docker container (my-ecr-repo:latest) 
+c. If the container is found, runs 'klist' and a SQL query inside the container
+
+This script validates that the Kerberos ticket can be used to access SQL server.
+
+"""
+
 with open('data.json', 'r') as file:
     data = json.load(file)
+
+def get_value(key):
+    return os.environ.get(key, data.get(key.lower()))
 
 def run_shell_script(instance_id, hostname):
 
     commands = [
-        # 'systemctl restart credentials-fetcher',
-        # 'systemctl restart ecs',
+        'systemctl restart credentials-fetcher',
+        'systemctl restart ecs',
         f'HOSTNAME="{hostname}"',
         'echo "Listing all Docker containers:"',
         'IMAGEID=$(docker ps --format "{{.ID}}  {{.Image}}" | grep "my-ecr-repo:latest" | awk \'{print $1}\')',
@@ -129,7 +142,7 @@ def get_instance_id_by_name(region, instance_name):
     return None
 
 
-region = os.environ["AWS_REGION"]
+region = get_value("AWS_REGION")
 instance_name_linux = data["stack_name"]+ '/MyAutoScalingGroup'
 instance_name_windows = data["windows_instance_tag"]
 

@@ -2,6 +2,20 @@ import boto3
 import json
 import os
 
+"""
+This script executes the security group modification, enabling communication between the EC2 instance and the Active Directory.
+
+This script performs the following operations:
+
+Loads configuration from a 'data.json' file, including the Active Directory domain name and EC2 instance identifier.
+
+Defines a function 'add_security_group_to_instance' that:
+a. Retrieves the AWS Directory Service details for the specified directory.
+b. Identifies the security group associated with the directory.
+c. Adds an inbound rule to the instance's security group, allowing all traffic from the directory's security group.
+
+"""
+
 with open('data.json', 'r') as file:
     data = json.load(file)
 
