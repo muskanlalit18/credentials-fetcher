@@ -15,16 +15,19 @@ with open('data.json', 'r') as file:
     # Load the JSON data
     data = json.load(file)
 
+def get_value(key):
+    return os.environ.get(key, data.get(key.lower()))
+
 tag = cdk.Tag("Name", "Test Credentials-fetcher in Domainless mode")
-aws_region = os.environ["AWS_REGION"]
-prefix_list = os.environ["PREFIX_LIST"]
+aws_region = get_value("AWS_REGION")
+prefix_list = get_value("PREFIX_LIST")
 domain_admin_password = data["domain_admin_password"]
 directory_name = data["directory_name"]
 windows_instance_tag = data["windows_instance_tag"]
 linux_instance_tag = data["linux_instance_tag"]
-key_name = os.environ["KEY_PAIR_NAME"]
+key_name = get_value("KEY_PAIR_NAME")
 number_of_gmsa_accounts = data["number_of_gmsa_accounts"]
-s3_bucket = os.environ["S3_PREFIX"] + data["s3_bucket_suffix"]
+s3_bucket = get_value("S3_PREFIX") + data["s3_bucket_suffix"]
 app_name = data["stack_name"]
 username = data["username"]
 password = data["password"]
