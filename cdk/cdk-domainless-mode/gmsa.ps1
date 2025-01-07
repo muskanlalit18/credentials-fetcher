@@ -27,12 +27,12 @@ $username = "admin@DOMAINNAME"
 $password = "INPUTPASSWORD" | ConvertTo-SecureString -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential($username, $password)
 $groupAllowedToRetrievePassword = "WebAppAccounts_OU"
-# This is the basedn path that needs to be in secrets manager as "distinguishedName" :  "OU=MYOU,OU=Users,OU=ActiveDirectory,DC=NETBIOS_NAME,DC=com"
-$path = "OU=MYOU,OU=Users,OU=ActiveDirectory,DC=NETBIOS_NAME,DC=com"
+# This is the basedn path that needs to be in secrets manager as "distinguishedName" :  "OU=MYOU,OU=Users,OU=ActiveDirectory,DC=contoso,DC=com"
+$path = "OU=MYOU,OU=Users,OU=contoso,DC=NETBIOS_NAME,DC=com"
 
 
 # 2) Create OU
-New-ADOrganizationalUnit -Name "MYOU" -Path "OU=Users,OU=ActiveDirectory,DC=NETBIOS_NAME,DC=com" -Credential $credential
+New-ADOrganizationalUnit -Name "MYOU" -Path "OU=Users,OU=contoso,DC=NETBIOS_NAME,DC=com" -Credential $credential
 
 # 3) Create the security group
 try {
@@ -67,7 +67,7 @@ for (($i = 1); $i -le NUMBER_OF_GMSA_ACCOUNTS; $i++)
     $gmsa_account_with_host_and_domain = $gmsa_account_with_host + ".DOMAINNAME"
 
     try {
-       #New-ADServiceAccount -Name serviceuser1 -Path "OU=MYOU1,OU=Users,OU=ActiveDirectory,DC=ActiveDirectory1,DC=com" -Credential $credential -DNSHostname "ActiveDirectory1.com"
+       #New-ADServiceAccount -Name serviceuser1 -Path "OU=MYOU1,OU=Users,OU=ActiveDirectory,DC=contoso,DC=com" -Credential $credential -DNSHostname "contoso.com"
         New-ADServiceAccount -Name $gmsa_account_name -DnsHostName $gmsa_account_with_domain -ServicePrincipalNames $gmsa_account_with_host, $gmsa_account_with_host_and_domain -PrincipalsAllowedToRetrieveManagedPassword $groupAllowedToRetrievePassword -Path $path -Credential $credential -Server DOMAINNAME
         Write-Output "New-ADServiceAccount -Name $gmsa_account_name -DnsHostName $gmsa_account_with_domain -ServicePrincipalNames $gmsa_account_with_host, $gmsa_account_with_host_and_domain -PrincipalsAllowedToRetrieveManagedPassword $groupAllowedToRetrievePassword -Path $path -Credential $credential -Server DOMAINNAME"
     } catch {
@@ -82,6 +82,9 @@ $sqlInstance = $env:computername
 New-NetFirewallRule -DisplayName "SQLServer default instance" -Direction Inbound -LocalPort 1433 -Protocol TCP -Action Allow
 New-NetFirewallRule -DisplayName "SQLServer Browser service" -Direction Inbound -LocalPort 1434 -Protocol UDP -Action Allow
 netsh advfirewall firewall add rule name = SQLPort dir = in protocol = tcp action = allow localport = 1433 remoteip = localsubnet profile = DOMAIN
+New-NetFirewallRule -DisplayName “AllowRDP” -Direction Inbound -Protocol TCP –LocalPort 3389 -Action Allow
+New-NetFirewallRule -DisplayName "AllowSQLServer" -Direction Inbound -Protocol TCP -LocalPort 1433 -Action Allow
+
 
 # Create a connection string
 $connectionString0 = "Server=$sqlInstance;Integrated Security=True;"
@@ -108,6 +111,10 @@ VALUES
     ('PLANK OTO', 'ACCOUNTANT', 'ACCOUNTS', '2022-03-05 03:57:09.967');
 alter authorization on database::[EmployeesDB] to [WebApp01$]
 "@
+
+
+$createLoginQuery = "CREATE LOGIN [NETBIOS_NAME\webapp01$] FROM WINDOWS WITH DEFAULT_DATABASE = [master], DEFAULT_LANGUAGE = [us_english];"
+Invoke-Sqlcmd -ConnectionString $connectionString0 -Query $createLoginQuery
 
 Invoke-Sqlcmd -ConnectionString $connectionString0 -Query $createDatabaseQuery -QueryTimeout 60
 Invoke-Sqlcmd -ConnectionString $connectionString1 -Query $query

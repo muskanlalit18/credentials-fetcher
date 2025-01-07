@@ -83,6 +83,13 @@ class CdkStack(Stack):
 
         self.security_group.add_ingress_rule (self.prefix_list,
                                                  ec2.Port.all_traffic())
+        
+        self.security_group.add_ingress_rule(
+            peer=self.security_group,
+            connection=ec2.Port.all_traffic(),
+            description="Allow all traffic from self"
+        )
+
 
         # Import existing keypair using keyname
         self.key_pair = ec2.KeyPair.from_key_pair_name(self, "KeyPair", key_pair_name)
@@ -148,6 +155,7 @@ class CdkStack(Stack):
                                     enable_sso=False
                                 )
 
+
         self.cfn_microsoft_AD.node.add_dependency(self.vpc)
 
         return self.cfn_microsoft_AD
@@ -158,13 +166,8 @@ class CdkStack(Stack):
                                 number_of_gmsa_accounts: int,
                                 s3_bucket_name: str):
 
-        user_data_script = self.setup_windows_userdata(password=password,
-                                                domain_name=domain_name,
-                                                number_of_gmsa_accounts=number_of_gmsa_accounts,
-                                                s3_bucket_name=s3_bucket_name)
         # Add user_data_script to user_data
         user_data = ec2.UserData.for_windows(persist=True)
-        user_data.add_commands(user_data_script)
         user_data = cdk.Fn.base64(user_data.render())
 
         # Create an instance role
@@ -207,7 +210,6 @@ class CdkStack(Stack):
                     "MyCfnInstance",
                     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.XLARGE).to_string(),
                     image_id=ec2.WindowsImage(version=ec2.WindowsVersion.WINDOWS_SERVER_2022_ENGLISH_FULL_SQL_2022_ENTERPRISE).get_image(self).image_id,
-                    user_data=user_data,
                     security_group_ids=[self.security_group.security_group_id],
                     subnet_id=self.subnet_1.subnet_id,
                     tags=[cdk.CfnTag(key="Name", value=instance_tag)],

@@ -1,15 +1,38 @@
 import boto3
 import json
+import os
+
+"""
+ECS Task Definition and gMSA Credential Spec Generator
+
+This script performs the following operations:
+
+1. Generates gMSA credential specs for a specified number of accounts.
+2. Uploads the generated credential specs to an S3 bucket.
+3. Retrieves an existing ECS task definition template.
+4. Modifies the task definition for each gMSA account:
+   - Adds Fargate compatibility
+   - Updates the credential specs to use the newly generated ones
+   - Adds the gMSA domainless capability
+5. Registers new task definitions for each gMSA account based on the modified template.
+
+It's designed to automate the process of setting up ECS tasks with gMSA authentication 
+for multiple accounts in an Active Directory environment.
+
+"""
 
 # Open the input file
 with open('data.json', 'r') as file:
     # Load the JSON data
     data = json.load(file)
 
+def get_value(key):
+    return os.environ.get(key, data.get(key.lower()))
+
 directory_name = data["directory_name"]
 netbios_name = data["netbios_name"]
 number_of_gmsa_accounts = data["number_of_gmsa_accounts"]
-s3_bucket = data["s3_bucket"]
+s3_bucket = get_value("S3_PREFIX") + data["s3_bucket_suffix"]
 task_definition_template_name = data["task_definition_template_name"]
 stack_name = data["stack_name"]
 
