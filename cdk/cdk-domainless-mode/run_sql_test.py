@@ -26,7 +26,7 @@ def run_shell_script(instance_id, hostname):
         'systemctl restart ecs',
         f'HOSTNAME="{hostname}"',
         'echo "Listing all Docker containers:"',
-        'IMAGEID=$(docker ps --format "{{.ID}}  {{.Image}}" | grep "my-ecr-repo:latest" | awk \'{print $1}\')',
+        'IMAGEID=$(docker ps --format "{{.ID}}  {{.Image}}" | grep "my-ecr-repo:latest" | awk \'{print $1}\' | head -n 1)',
         'echo "IMAGEID: $IMAGEID"',
         'if [ -n "$IMAGEID" ]; then',
         '    echo "Container ID: $IMAGEID"',

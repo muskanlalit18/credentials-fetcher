@@ -19,6 +19,8 @@ Create the following environment variables:
 
 Pre-requisites
 Please take a look at data.json for default values.
+If you're testing a new RPM, upload it in the S3 bucket.
+Ensure you have docker running in the background.
 1) Create secret in Secrets Manager as per https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linux-gmsa-setup with the following values:
    This is the same secret in data.json.
    ```
