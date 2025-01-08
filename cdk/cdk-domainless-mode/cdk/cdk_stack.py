@@ -272,7 +272,7 @@ class CdkStack(Stack):
         auto_scaling_group = autoscaling.AutoScalingGroup(self, "MyAutoScalingGroup",
                                                            vpc=vpc, require_imdsv2 = True,
                                                            min_capacity=1,
-                                                           max_capacity=6,
+                                                           max_capacity=1,
                                                            desired_capacity=1,
                                                            security_group = security_group,
                                                            machine_image = machine_image,
