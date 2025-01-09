@@ -25,7 +25,7 @@ Ensure you have docker running in the background.
    This is the same secret in data.json.
    ```
     Secret key  Secret value
-    username    standarduser01
+    username    StandardUser01
     password    p@ssw0rd
     domainName  contoso.com
     ```
