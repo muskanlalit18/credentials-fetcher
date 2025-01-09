@@ -113,7 +113,7 @@ alter authorization on database::[EmployeesDB] to [WebApp01$]
 "@
 
 
-$createLoginQuery = "CREATE LOGIN [NETBIOS_NAME\webapp01$] FROM WINDOWS WITH DEFAULT_DATABASE = [master], DEFAULT_LANGUAGE = [us_english];"
+$createLoginQuery = "CREATE LOGIN [NETBIOS_NAME\webapp01$] FROM WINDOWS WITH DEFAULT_DATABASE = [master], DEFAULT_LANGUAGE = [us_english]; EXEC sp_addrolemember 'db_owner', 'NETBIOS_NAME\webapp01$';"
 Invoke-Sqlcmd -ConnectionString $connectionString0 -Query $createLoginQuery
 
 Invoke-Sqlcmd -ConnectionString $connectionString0 -Query $createDatabaseQuery -QueryTimeout 60

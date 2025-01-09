@@ -300,15 +300,13 @@ class CdkStack(Stack):
     def setup_linux_userdata (self, instance_tag: str, password: str,
                                 domain_name: str,
                                 key_name: str,
-                                number_of_gmsa_accounts: int, rpm_file: str, s3_bucket: int):
+                                number_of_gmsa_accounts: int, rpm_file: str, s3_bucket: str):
         #In instance, 'cat /var/lib/cloud/instance/user-data.txt'
         # get random uuid string
         random_uuid_str =  str(uuid.uuid4())
         ecs_cluster_name="ecs-load-test-" + random_uuid_str
         user_data_script = '''
             echo "ECS_GMSA_SUPPORTED=true" >> /etc/ecs/ecs.config
-            aws s3 cp s3://BUCKET_NAME/RPM_FILE .
-            dnf install -y dotnet
             dnf install -y realmd
             dnf install -y oddjob
             dnf install -y oddjob-mkhomedir
@@ -316,7 +314,20 @@ class CdkStack(Stack):
             dnf install -y adcli
             dnf install -y krb5-workstation
             dnf install -y samba-common-tools
-            dnf install -y RPM_FILE
+            if aws s3 ls "s3://BUCKET_NAME/RPM_FILE" &> /dev/null; then
+                echo "RPM file found in S3 bucket. Transferring to EC2 instance..." >> /tmp/userdata.log
+                aws s3 cp s3://BUCKET_NAME/RPM_FILE .
+                dnf install -y ./RPM_FILE
+                if [ $? -ne 0 ]; then
+                    echo "RPM file installation failed. Installing credentials-fetcher..." >> /tmp/userdata.log
+                    dnf install -y credentials-fetcher
+                else
+                    echo "RPM file installation successful." >> /tmp/userdata.log
+                fi
+            else
+                echo "RPM file not found in S3 bucket. Installing credentials-fetcher..." >> /tmp/userdata.log
+                dnf install -y credentials-fetcher
+            fi
             systemctl enable credentials-fetcher
             systemctl start credentials-fetcher
             systemctl enable --now --no-block ecs.service
