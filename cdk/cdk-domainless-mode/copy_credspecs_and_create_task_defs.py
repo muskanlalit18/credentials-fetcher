@@ -35,6 +35,7 @@ number_of_gmsa_accounts = data["number_of_gmsa_accounts"]
 s3_bucket = get_value("S3_PREFIX") + data["s3_bucket_suffix"]
 task_definition_template_name = data["task_definition_template_name"]
 stack_name = data["stack_name"]
+max_tasks = data["max_tasks_in_instance"]
 
 credspec_template = """
 {
@@ -78,9 +79,6 @@ secret_id = "aws/directoryservice/" + netbios_name + "/gmsa"
 print("Secret id = " + secret_id)
 gmsa_secret_arn = secrets_manager_client.get_secret_value(SecretId=secret_id)['ARN']
 credspec_template = credspec_template.replace("GMSA_SECRET_ARN", gmsa_secret_arn)
-
-for i in range(1, number_of_gmsa_accounts + 1):
-    credspec_template.replace("GMSA_NAME", f"GMSA{i}")
 
 aws_profile_name = data["aws_profile_name"]
 
@@ -135,60 +133,56 @@ for cluster_arn in ecs_clusters['clusterArns']:
         ecs_cluster_instance_arn = ecs_client.list_container_instances(cluster=ecs_cluster_arn)['containerInstanceArns'][0]
         break
 
-task_definition_orig = task_definition
-print(task_definition)
-for i in range(1, number_of_gmsa_accounts + 1):
-    task_definition = task_definition_orig
-    credspec_template = credspec_template.replace("GMSA_NAME", f"WebApp0{i}")
-    credspec = json.loads(credspec_template)
+credspecs = []
+for i in range(1, number_of_gmsa_accounts+1):
+    credspec_template_copy = credspec_template.replace("GMSA_NAME", f"WebApp0{i}")
+    credspec = json.loads(credspec_template_copy)
     credspec_str = json.dumps(credspec)
-    # copy credspec to S3 folder
+    
+    # Copy credspec to S3 folder
     s3_client = boto3.client('s3')
     bucket_location = ""
     bucket_arn = ""
     s3_key = ""
     try:
-        # put credspec_str into s3 bucket
         s3_key = f"WebApp0{i}_credspec.json"
-        print("Putting object")
-        s3_client.put_object(Body=credspec_str, Bucket=s3_bucket, Key=f'WebApp0{i}_credspec.json')
+        print(f"Putting object: {s3_key}")
+        s3_client.put_object(Body=credspec_str, Bucket=s3_bucket, Key=s3_key)
         bucket_location = s3_client.get_bucket_location(Bucket=s3_bucket)
         bucket_arn = f"arn:aws:s3:::{s3_bucket}"
+        credspecs.append(f"credentialspecdomainless:{bucket_arn}/{s3_key}")
     except Exception as e:
         print(e)
-    
-    #print(task_definition)
+
+task_definition_orig = task_definition
+for i in range(1, max_tasks + 1):
+    task_definition = task_definition_orig
+    #print(task_defnition)
     task_definition = task_definition["taskDefinition"]
     task_definition["compatibilities"].append("FARGATE")
 
-    container_defs = task_definition['containerDefinitions']
+    container_defs = []
+    for j in range(1, 11):
+        container_def = task_definition['containerDefinitions'][0].copy()  # Use the first container as a template
+        container_def['name'] = f"MyContainer{j}"
+        container_def['credentialSpecs'] = [credspecs[j-1]]  # Use the corresponding credspec
+        container_defs.append(container_def)
     pretty_json = json.dumps(container_defs, indent=4)
     print(pretty_json)
-    for container_def in container_defs:
-        credspec = container_def['credentialSpecs']
-        # Remove entry with key 'credentialspecdomainless'
-        credspec_without_key = []
-        for d in credspec:
-            if 'credentialspecdomainless' not in d:
-                credspec_without_key.append(d)
-        credspec = credspec_without_key
-        print(credspec)
-        credspec.append("credentialspecdomainless:" + bucket_arn + "/" + s3_key)
-        container_def['credentialSpecs'] = credspec
-        attributes = task_definition['requiresAttributes']
-        attribute = {}
-        attribute["name"] = "ecs.capability.gmsa-domainless"
-        attribute["targetId"] = ecs_cluster_arn
-        attributes.append(attribute)
-        family = task_definition['family'] + "-" + str(i)
-        ecs_client.register_task_definition(family=family, 
-                                        taskRoleArn=ecs_task_execution_role_arn,
-                                        executionRoleArn=ecs_task_execution_role_arn,
-                                        networkMode=task_definition['networkMode'],
-                                        containerDefinitions=container_defs,
-                                        requiresCompatibilities=["EC2", "FARGATE"],
-                                        runtimePlatform={'cpuArchitecture': 'X86_64', 'operatingSystemFamily' : 'LINUX'},
-                                        cpu=task_definition['cpu'],
-                                        memory=task_definition['memory'])
-        #print(ecs_cluster_arn)
+    attributes = task_definition['requiresAttributes']
+    attribute = {}
+    attribute["name"] = "ecs.capability.gmsa-domainless"
+    attribute["targetId"] = ecs_cluster_arn
+    attributes.append(attribute)
+    family = task_definition['family'] + "-" + str(i)
+    ecs_client.register_task_definition(family=family, 
+                                    taskRoleArn=ecs_task_execution_role_arn,
+                                    executionRoleArn=ecs_task_execution_role_arn,
+                                    networkMode=task_definition['networkMode'],
+                                    containerDefinitions=container_defs,
+                                    requiresCompatibilities=["EC2", "FARGATE"],
+                                    runtimePlatform={'cpuArchitecture': 'X86_64', 'operatingSystemFamily' : 'LINUX'},
+                                    cpu=task_definition['cpu'],
+                                    memory=task_definition['memory'])
+    #print(ecs_cluster_arn)
 
