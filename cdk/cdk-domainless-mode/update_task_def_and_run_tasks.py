@@ -67,7 +67,19 @@ def update_task_definition_image(task_definition_family, repository_name, tag, r
     return revised_arn
 
 def run_task(ecs_client, cluster_name, task_definition, subnet_ids, security_group_id):
+    
     try:
+        task_def_description = ecs_client.describe_task_definition(taskDefinition=task_definition)
+        container_defs = task_def_description['taskDefinition']['containerDefinitions']
+        
+        # Check if any container in the task definition has a credentialSpecs field
+        has_cred_specs = any('credentialSpecs' in container and container['credentialSpecs'] 
+                             for container in container_defs)
+        
+        if not has_cred_specs:
+            print(f"Skipping task definition {task_definition} as it does not have credentialSpecs")
+            return None
+        
         task = ecs_client.run_task(
             cluster=cluster_name,
             taskDefinition=task_definition,

@@ -397,7 +397,7 @@ class CdkStack(Stack):
         container_definition = task_definition.add_container(
             "MyContainer",
             image=ecs.ContainerImage.from_registry("nginx:latest"),
-            memory_reservation_mib=256,
+            memory_reservation_mib=128,
             start_timeout=duration.seconds(120),
             stop_timeout=duration.seconds(60)
         )
