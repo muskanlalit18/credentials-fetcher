@@ -35,7 +35,7 @@ number_of_gmsa_accounts = data["number_of_gmsa_accounts"]
 s3_bucket = get_value("S3_PREFIX") + data["s3_bucket_suffix"]
 task_definition_template_name = data["task_definition_template_name"]
 stack_name = data["stack_name"]
-max_tasks = data["max_tasks_in_instance"]
+max_tasks = data["max_tasks_per_instance"]
 
 credspec_template = """
 {

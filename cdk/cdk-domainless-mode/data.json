@@ -23,5 +23,5 @@
   "docker_image_tag": "latest",
   "dockerfile_path": "./Dockerfile",
   "rpm_file": "credentials-fetcher-1.3.65-0.amzn2023.x86_64.rpm",
-  "max_tasks_in_instance": 3
+  "max_tasks_per_instance": 3
 }
