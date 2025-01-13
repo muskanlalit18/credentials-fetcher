@@ -1,3 +1,8 @@
+# Use this script to create new Non Domain Joined gMSA accounts and add them to
+# the AD. This script is run on the Windows Instance with access to Managed AD.
+# NOTE: The cdk stack already creates N gmsa accounts where N corresponds to the number_of_gmsa_accounts in data
+# .json. Use this script if you would like to create new accounts without deploying/re-deploying the cdk stack
+
 $username = "admin@CONTOSO.COM"
 $password = "Qn:51eJsORJNL@~{HY@?" | ConvertTo-SecureString -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential($username, $password)

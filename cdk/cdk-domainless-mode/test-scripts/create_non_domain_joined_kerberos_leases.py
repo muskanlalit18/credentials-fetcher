@@ -1,8 +1,14 @@
 import grpc
 import credentialsfetcher_pb2
 import credentialsfetcher_pb2_grpc
+import json
 
-with open('data.json', 'r') as file:
+'''
+Use this script to create and test N leases for N non domain-joined gMSA
+accounts. This script is run on a linux instance in stand-alone mode.
+'''
+
+with open('../data.json', 'r') as file:
     # Load the JSON data
     data = json.load(file)
 
@@ -16,30 +22,29 @@ def run():
         stub = credentialsfetcher_pb2_grpc.CredentialsFetcherServiceStub(channel)
         for i in range(1, number_of_gmsa_accounts):
             credspec_contents = f"""{{
-                "CmsPlugins": ["ActiveDirectory"],
-                "DomainJoinConfig": {{
-                    "Sid": "S-1-5-21-2725122404-4129967127-2630707939",
-                    "MachineAccountName": "WebApp0{i}",
-                    "Guid": "e96e0e09-9305-462f-9e44-8a8179722897",
-                    "DnsTreeName": {directory_name},
-                    "DnsName": {directory_name},
-                    "NetBiosName": {netbios_name}
-                }},
-                "ActiveDirectoryConfig": {{
-                    "GroupManagedServiceAccounts": [
-                        {{"Name": "WebApp0{i}", "Scope": {directory_name}}},
-                        {{"Name": "WebApp0{i}", "Scope": {netbios_name}}}
-                    ],
-                    "HostAccountConfig": {{
-                        "PortableCcgVersion": "1",
-                        "PluginGUID": "{{GDMA0342-266A-4D1P-831J-20990E82944F}}",
-                        "PluginInput": {{
-                            "CredentialArn": "aws/directoryservice/contoso/gmsa"
-                        }}
-                    }}
-                }}
-            }}"""
-
+                                "CmsPlugins": ["ActiveDirectory"],
+                                "DomainJoinConfig": {{
+                                    "Sid": "S-1-5-21-2725122404-4129967127-2630707939",
+                                    "MachineAccountName": "WebApp0{i}",
+                                    "Guid": "e96e0e09-9305-462f-9e44-8a8179722897",
+                                    "DnsTreeName": "{directory_name}",
+                                    "DnsName": "{directory_name}",
+                                    "NetBiosName": "{netbios_name}"
+                                }},
+                                "ActiveDirectoryConfig": {{
+                                    "GroupManagedServiceAccounts": [
+                                        {{"Name": "WebApp0{i}", "Scope": "{directory_name}"}},
+                                        {{"Name": "WebApp0{i}", "Scope": "{netbios_name}"}}
+                                    ],
+                                    "HostAccountConfig": {{
+                                        "PortableCcgVersion": "1",
+                                        "PluginGUID": "{{GDMA0342-266A-4D1P-831J-20990E82944F}}",
+                                        "PluginInput": {{
+                                            "CredentialArn": "aws/directoryservice/contoso/gmsa"
+                                        }}
+                                    }}
+                                }}
+                            }}"""
             contents = [credspec_contents]
             response = stub.AddNonDomainJoinedKerberosLease(
                 credentialsfetcher_pb2.CreateNonDomainJoinedKerberosLeaseRequest(

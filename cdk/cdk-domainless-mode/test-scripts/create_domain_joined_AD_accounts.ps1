@@ -1,3 +1,6 @@
+# Use this script to create new Domain Joined gMSA accounts and add them to
+# the AD. This script is run on the Windows Instance with access to Managed AD.
+
 $username = "admin@CONTOSO.COM"
 $password = "Qn:51eJsORJNL@~{HY@?" | ConvertTo-SecureString -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential($username, $password)

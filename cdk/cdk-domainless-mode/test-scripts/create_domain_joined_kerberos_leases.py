@@ -1,8 +1,12 @@
 import grpc
 import credentialsfetcher_pb2
 import credentialsfetcher_pb2_grpc
-
-with open('data.json', 'r') as file:
+import json
+'''
+Use this script to create and test N leases for N domain-joined gMSA 
+accounts. This script is run on a linux instance in stand-alone mode.
+'''
+with open('../data.json', 'r') as file:
     # Load the JSON data
     data = json.load(file)
 
@@ -19,14 +23,14 @@ def run():
                     "Sid": "S-1-5-21-2725122404-4129967127-2630707939",
                     "MachineAccountName": "DJ_WebApp0{i}",
                     "Guid": "e96e0e09-9305-462f-9e44-8a8179722897",
-                    "DnsTreeName": {directory_name},
-                    "DnsName": {directory_name},
-                    "NetBiosName": {netbios_name}
+                    "DnsTreeName": "{directory_name}",
+                    "DnsName": "{directory_name}",
+                    "NetBiosName": "{netbios_name}"
                 }},
                 "ActiveDirectoryConfig": {{
                     "GroupManagedServiceAccounts": [
-                        {{"Name": "DJ_WebApp0{i}", "Scope": {directory_name}}},
-                        {{"Name": "DJ_WebApp0{i}", "Scope": {netbios_name}}}
+                        {{"Name": "DJ_WebApp0{i}", "Scope": "{directory_name}"}},
+                        {{"Name": "DJ_WebApp0{i}", "Scope": "{netbios_name}"}}
                     ]
                 }}
             }}"""
