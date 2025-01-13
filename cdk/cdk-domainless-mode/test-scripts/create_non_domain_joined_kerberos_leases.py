@@ -2,6 +2,7 @@ import grpc
 import credentialsfetcher_pb2
 import credentialsfetcher_pb2_grpc
 import json
+import os
 
 '''
 Use this script to create and test N leases for N non domain-joined gMSA
@@ -54,6 +55,9 @@ def run():
                     domain={directory_name}
                 )
             )
+            lease_path = (f"/var/credentials-fetcher/krbdir/"
+                          f"{response.lease_id}/WebApp0{i}/krb5cc")
+            assert os.path.exists(lease_path)
             print(f"Server response: {response}")
 
 if __name__ == '__main__':
