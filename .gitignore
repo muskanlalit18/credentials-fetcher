@@ -4,3 +4,4 @@
 **/obj/
 /.vscode/
 /auth/**/*.exe
+credentials-fetcher.sln
