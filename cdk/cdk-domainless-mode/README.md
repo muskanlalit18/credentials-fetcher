@@ -21,14 +21,9 @@ Pre-requisites
 Please take a look at data.json for default values.
 If you're testing a new RPM, upload it in the S3 bucket.
 Ensure you have docker running in the background.
-1) Create secret in Secrets Manager as per https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linux-gmsa-setup with the following values:
-   This is the same secret in data.json.
-   ```
-    Secret key  Secret value
-    username    StandardUser01
-    password    p@ssw0rd
-    domainName  contoso.com
-    ```
+
+1. Update data.json with your personal environment values, and make sure there are no values with "xxxxxxxx"
+
 2) 'default' AWS profile with administrator access is needed, a separate/burner AWS account would suffice.
 
 Steps to run tasks in ECS with Credentials-fetcher.
@@ -75,33 +70,11 @@ Steps to run tasks in ECS with Credentials-fetcher.
         _: [ 'bootstrap' ],
     ```
    
-6) Create secrets in Secrets Manager for each new gMSA account
+6) Run End-To-End SQL test with Credentials Fetcher ECS Domainless Setup
+   ```aiignore
+      (.venv) tests % python3 run_e2e_test.py
    ```
-   (.venv) cdk % python3 create_secrets.py
-   ```
-
-7) Run copy_credspecs_and_create_task_defs.py to create and copy credspecs to S3 bucket and also to register ECS task definitions.
-    ```
-     (.venv) cdk % python3 copy_credspecs_and_create_task_defs.py
-     
-    ```
-8) Run the following scripts in order to setup the windows instance and update inbound rules of the security group
-    ```
-        (.venv) cdk % python3 setup_windows_instance.py
-        (.venv) cdk % python3 update_inbound_rules.py
-    ```
-
-9) After CloudFormation stack is complete, update and run tasks using update_task_def_and_run_tasks.py. (You can install a test RPM into the ECS intance here, if you like)
-    ```
-        (.venv) cdk % python3 update_task_def_and_run_tasks.py
-    ```
-
-10) For the final check that the container is able to access SQL using the Kerberos ticket, run run_sql_test.py
-    ```
-        (.venv) cdk % python3 run_sql_test.py
-    ```
-
-11) Done: If everything worked as expected, you should see an output like this in the console:
+7) Done: If everything worked as expected, you should see an output like this in the console:
     ```
             EmpID EmpName Designation DepartmentJoiningDate
     ----------- -------------------------------------------------- -------------------------------------------------- -------------------------------------------------------------------------
