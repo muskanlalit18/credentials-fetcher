@@ -257,6 +257,7 @@ std::string generate_lease_id();
 
 void clearString( std::string& str );
 
+
 #if AMAZON_LINUX_DISTRO
 
 std::string retrieve_credspec_from_s3( std::string s3_arn, std::string region,
