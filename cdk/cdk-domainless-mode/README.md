@@ -74,6 +74,11 @@ Steps to run tasks in ECS with Credentials-fetcher.
         [10:29:46] Command line arguments: {
         _: [ 'bootstrap' ],
     ```
+   
+6) Create secrets in Secrets Manager for each new gMSA account
+   ```
+   (.venv) cdk % python3 create_secrets.py
+   ```
 
 7) Run copy_credspecs_and_create_task_defs.py to create and copy credspecs to S3 bucket and also to register ECS task definitions.
     ```

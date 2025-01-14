@@ -3,5 +3,8 @@
 **/bin/Debug/
 **/obj/
 /.vscode/
+.idea
 /auth/**/*.exe
 credentials-fetcher.sln
+cmake-build-debug/
+

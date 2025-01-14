@@ -1,6 +1,7 @@
 import boto3
 import json
 import os
+from parse_data_from_json import stack_name, directory_name
 
 """
 This script executes the security group modification, enabling communication between the EC2 instance and the Active Directory.
@@ -16,11 +17,8 @@ c. Adds an inbound rule to the instance's security group, allowing all traffic f
 
 """
 
-with open('data.json', 'r') as file:
-    data = json.load(file)
 
-directory_name = data["directory_name"]
-instance_name = "Credentials-fetcher-AD-Stack/MyAutoScalingGroup"
+instance_name = stack_name + "/MyAutoScalingGroup"
 
 def add_security_group_to_instance(directory_name, instance_name):
 
