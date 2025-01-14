@@ -34,5 +34,3 @@ def create_secrets():
                 print(f"Secret already exists: {secret_name}")
             except Exception as e:
                 print(f"Error creating secret {secret_name}: {str(e)}")
-
-create_secrets()

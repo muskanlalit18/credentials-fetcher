@@ -1,3 +1,5 @@
+from time import sleep
+
 import boto3
 import os
 from create_secrets import create_secrets
@@ -197,60 +199,155 @@ def update_task_defs_and_run_tasks():
 
     print("All tasks have been processed.")
 
-def delete_task_definitions_with_credential_specs():
-    # List all task definition families
+
+def get_running_task_definitions():
+    """
+    Get a set of task definition ARNs that are currently running.
+    """
+    running_task_defs = set()
+
     try:
-        families = ecs_client.list_task_definition_families()['families']
+        # List all clusters
+        clusters = ecs_client.list_clusters()['clusterArns']
+
+        for cluster in clusters:
+            # Get running tasks in each cluster
+            running_tasks = ecs_client.list_tasks(
+                cluster=cluster,
+                desiredStatus='RUNNING'
+            )['taskArns']
+
+            if running_tasks:
+                # Get task details including task definition
+                tasks = ecs_client.describe_tasks(
+                    cluster=cluster,
+                    tasks=running_tasks
+                )['tasks']
+
+                # Add task definition ARNs to set
+                for task in tasks:
+                    running_task_defs.add(task['taskDefinitionArn'])
+
     except ClientError as e:
-        print(f"Error listing task definition families: {e}")
-        return
+        print(f"Error getting running tasks: {e}")
+        return None
 
-    for family in families:
-        try:
-            # List all active task definitions for this family
-            response = ecs_client.list_task_definitions(familyPrefix=family, status='ACTIVE')
-            task_definition_arns = response['taskDefinitionArns']
+    return running_task_defs
 
-            for task_def_arn in task_definition_arns:
-                # Describe the task definition
-                task_def = ecs_client.describe_task_definition(taskDefinition=task_def_arn)['taskDefinition']
+def delete_unused_task_definitions():
+    """
+    Delete task definitions that are not running and have credentialSpecs defined.
+    """
+    try:
+        # Get running task definitions
+        running_task_defs = get_running_task_definitions()
+        if running_task_defs is None:
+            return
 
-                # Check if any container in the task definition has credentialSpecs
-                has_credential_specs = any(
-                    'credentialSpecs' in container and container['credentialSpecs']
-                    for container in task_def['containerDefinitions']
-                )
+        # Get all task definition families
+        families = ecs_client.list_task_definition_families()['families']
 
-                if has_credential_specs:
-                    # Deregister the task definition
-                    print(f"Deregistering task definition: {task_def_arn}")
-                    ecs_client.deregister_task_definition(taskDefinition=task_def_arn)
-                    print(f"Successfully deregistered task definition: {task_def_arn}")
+        deleted_count = 0
+        skipped_count = 0
+        # List all task definitions for this family
+        task_defs = ecs_client.list_task_definitions()
 
-        except ClientError as e:
-            print(f"Error processing family {family}: {e}")
+        if 'taskDefinitionArns' in task_defs:
+            for arn in task_defs['taskDefinitionArns']:
+                # Skip if task definition is running
+                if arn in running_task_defs:
+                    print(f"Skipping running task definition: {arn}")
+                    skipped_count += 1
+                    continue
 
-def run_e2e_test():
-    if not check_s3_bucket_exists():
-        create_s3_bucket()
-    if not is_s3_bucket_empty():
-        empty_s3_bucket()
-    create_secrets()
-    create_and_register_tasks()
-    update_windows_instance()
-    add_security_group_to_instance(directory_name, instance_name)
-    update_task_defs_and_run_tasks()
+                # Get task definition details
+                task_def = ecs_client.describe_task_definition(
+                    taskDefinition=arn
+                )['taskDefinition']
+
+                print(task_def)
+                # Check if any container has credentialSpecs
+                for container in task_def['containerDefinitions']:
+                    if 'credentialSpecs' in container:
+                        try:
+                            # Deregister task definition
+                            ecs_client.deregister_task_definition(
+                                taskDefinition=arn
+                            )
+                            print(f"Deleted task definition: {arn}")
+                            deleted_count += 1
+                        except ClientError as e:
+                            print(f"Error deleting task definition {arn}: {e}")
+                    else:
+                        print(f"Skipping task definition without credentialSpecs: {arn}")
+                        skipped_count += 1
+
+        print(f"\nSummary:")
+        print(f"Deleted task definitions: {deleted_count}")
+        print(f"Skipped task definitions: {skipped_count}")
+
+    except ClientError as e:
+        print(f"Error: {e}")
+
+def run_sql_test():
     instance_name_linux = stack_name + '/MyAutoScalingGroup'
     instance_id_linux = get_instance_id_by_name(region, instance_name_linux)
     instance_id_windows = get_instance_id_by_name(region, windows_instance_tag)
     hostname = get_windows_hostname(instance_id_windows)
     run_shell_script(instance_id_linux, hostname)
-    print("------------E2E Test Successful!------------------")
+
+def run_e2e_test():
+    if not check_s3_bucket_exists():
+        if not create_s3_bucket():
+            print("s3 bucket was not created properly, exiting...")
+            return
+    if not is_s3_bucket_empty():
+        empty_s3_bucket()
+    print("Using s3 bucket: " + bucket_name)
+    print("----------S3 bucket created and ready for use-----------------")
+    create_secrets()
+    print("\n" * 3)
+    print("-----------------Secret Creation Complete.-------------------")
+    print("\n" * 3)
+    create_and_register_tasks()
+    print("\n" * 3)
+    print("-----------------Created and Registered Tasks.---------------")
+    print("\n" * 3)
+    print("-----------------Windows instance is Ready--------------------")
+    add_security_group_to_instance(directory_name, instance_name)
+    print("\n" * 3)
+    print("--------Linux instance has necessary Security groups Added----")
+    print("\n" * 3)
+    update_task_defs_and_run_tasks()
+    print("\n" * 3)
+    print("--------Task definition updated, ready to run SQL Test--------")
+    print("Waiting 15 seconds before running SQL Test")
+    print("\n" * 3)
+    sleep(15)
+    print("Sleep complete. Executing SQL test now.")
+    run_sql_test()
+    print("###################################################")
+    print("###################################################")
+    print("###################################################")
+    print("###################################################")
+    print("\n" * 3)
+    print("------------E2E Test Successful!!------------------")
+    print("\n" * 3)
+    print("###################################################")
+    print("###################################################")
+    print("###################################################")
+    print("###################################################")
 
 def cleanup_after_test_complete():
+    print("\n" * 3)
+    print("------------Initiating cleanup after test--------------")
+    print("\n" * 3)
     delete_secrets()
     empty_s3_bucket()
-    delete_task_definitions_with_credential_specs()
+    delete_unused_task_definitions()
+    print("\n" * 3)
+    print("------------Cleanup Complete!!--------------")
+    print("\n" * 3)
 
 run_e2e_test()
 cleanup_after_test_complete()

@@ -22,6 +22,3 @@ def delete_secrets():
             print(f"Secret not found: {secret_name}")
         except Exception as e:
             print(f"Error deleting secret {secret_name}: {str(e)}")
-
-# Usage
-delete_secrets()

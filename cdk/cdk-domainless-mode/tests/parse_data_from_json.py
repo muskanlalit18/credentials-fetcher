@@ -25,5 +25,9 @@ bucket_name = get_value("S3_PREFIX") + data["s3_bucket_suffix"]
 aws_profile_name = data["aws_profile_name"]
 username = data["username"]
 password = data["password"]
-windows_instance_tag = data["ActiveDirectoryManagementInstance"]
+windows_instance_tag = data["windows_instance_tag"]
 domain_admin_password = data["domain_admin_password"]
+
+if "XXX" in bucket_name:
+    print("S3_PREFIX is not setup correctly, please set it and retry")
+    exit(1)

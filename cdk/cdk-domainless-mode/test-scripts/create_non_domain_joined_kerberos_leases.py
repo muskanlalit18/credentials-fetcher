@@ -50,9 +50,9 @@ def run():
             response = stub.AddNonDomainJoinedKerberosLease(
                 credentialsfetcher_pb2.CreateNonDomainJoinedKerberosLeaseRequest(
                     credspec_contents=contents,
-                    username={username},
-                    password={password},
-                    domain={directory_name}
+                    username=username,
+                    password=password,
+                    domain=directory_name
                 )
             )
             lease_path = (f"/var/credentials-fetcher/krbdir/"

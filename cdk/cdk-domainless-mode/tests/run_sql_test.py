@@ -134,11 +134,11 @@ def get_instance_id_by_name(region, instance_name):
     return None
 
 
-instance_name_linux = stack_name + '/MyAutoScalingGroup'
-instance_name_windows = windows_instance_tag
-instance_id_linux = get_instance_id_by_name(region, instance_name_linux)
-instance_id_windows = get_instance_id_by_name(region, instance_name_windows)
-
-hostname = get_windows_hostname(instance_id_windows)
-run_shell_script(instance_id_linux, hostname)
+# instance_name_linux = stack_name + '/MyAutoScalingGroup'
+# instance_name_windows = windows_instance_tag
+# instance_id_linux = get_instance_id_by_name(region, instance_name_linux)
+# instance_id_windows = get_instance_id_by_name(region, instance_name_windows)
+#
+# hostname = get_windows_hostname(instance_id_windows)
+# run_shell_script(instance_id_linux, hostname)
 

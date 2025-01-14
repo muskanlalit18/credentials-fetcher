@@ -7,7 +7,7 @@ RUN apt-get update \
         apt install -y git clang wget curl autoconf \
         libglib2.0-dev libboost-dev libkrb5-dev libsystemd-dev libssl-dev \
         libboost-program-options-dev libboost-filesystem-dev byacc make libjsoncpp-dev \
-        clang-12
+        clang-12 libgtest-dev
 
 RUN ln -sf /usr/lib/llvm-12/bin/clang /usr/bin/clang \
     && ln -sf /usr/lib/llvm-12/bin/clang++ /usr/bin/clang++

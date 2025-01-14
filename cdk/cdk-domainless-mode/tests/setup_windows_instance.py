@@ -106,7 +106,3 @@ def get_instance_id_by_name(region, instance_name):
     
     return None
 
-instance_id = get_instance_id_by_name(region, instance_name)
-script_path = os.path.join(os.path.dirname(__file__), 'gmsa.ps1')
-
-run_powershell_script(instance_id, script_path)

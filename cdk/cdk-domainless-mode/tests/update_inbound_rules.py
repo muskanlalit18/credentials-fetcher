@@ -64,6 +64,23 @@ def add_security_group_to_instance(directory_name, instance_name):
     
     instance_sg_id = instance['SecurityGroups'][0]['GroupId']
 
+    # Check if the rule already exists
+    existing_rules = ec2.describe_security_group_rules(
+        Filters=[{'Name': 'group-id', 'Values': [instance_sg_id]}]
+    )['SecurityGroupRules']
+
+    rule_exists = any(
+        rule['IpProtocol'] == '-1' and
+        rule['FromPort'] == -1 and
+        rule['ToPort'] == -1 and
+        rule.get('ReferencedGroupInfo', {}).get('GroupId') == security_group_id
+        for rule in existing_rules
+    )
+
+    if rule_exists:
+        print(f"Rule already exists in security group {instance_sg_id}")
+        return
+
     # Add the new inbound rule to the security group
     try:
         ec2.authorize_security_group_ingress(
@@ -81,7 +98,3 @@ def add_security_group_to_instance(directory_name, instance_name):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
-try:
-    add_security_group_to_instance(directory_name, instance_name)
-except Exception as e:
-    print(f"An error occurred: {str(e)}")
