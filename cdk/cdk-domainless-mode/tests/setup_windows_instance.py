@@ -1,6 +1,9 @@
 import boto3
 import os
 import json
+from parse_data_from_json import (domain_admin_password, directory_name,
+                                  netbios_name, number_of_gmsa_accounts,
+                                  bucket_name, region, instance_name)
 
 """
 This script sets up the EC2 Windows instance.
@@ -29,23 +32,17 @@ for configuring Group Managed Service Accounts (gMSA) and related AWS resources.
 
 """
 
-with open('data.json', 'r') as file:
-    data = json.load(file)
-
-def get_value(key):
-    return os.environ.get(key, data.get(key.lower()))
-
 def run_powershell_script(instance_id, script_path):
 
     with open(script_path, 'r') as file:
         script_content = file.read()
 
-    script_content = script_content.replace("INPUTPASSWORD", data["domain_admin_password"])
-    script_content = script_content.replace("DOMAINNAME", data["directory_name"])
-    script_content = script_content.replace("NETBIOS_NAME", data["netbios_name"])
-    script_content = script_content.replace("NUMBER_OF_GMSA_ACCOUNTS", str(data["number_of_gmsa_accounts"]))
-    s3_bucket = get_value("S3_PREFIX") + data["s3_bucket_suffix"]
-    script_content = script_content.replace("BUCKET_NAME", s3_bucket)
+    script_content = script_content.replace("INPUTPASSWORD",
+                                            domain_admin_password)
+    script_content = script_content.replace("DOMAINNAME", directory_name)
+    script_content = script_content.replace("NETBIOS_NAME", netbios_name)
+    script_content = script_content.replace("NUMBER_OF_GMSA_ACCOUNTS", str(number_of_gmsa_accounts))
+    script_content = script_content.replace("BUCKET_NAME", bucket_name)
     
     ssm = boto3.client('ssm')
 
@@ -109,10 +106,3 @@ def get_instance_id_by_name(region, instance_name):
     
     return None
 
-region = get_value("AWS_REGION")
-instance_name = data["windows_instance_tag"]
-
-instance_id = get_instance_id_by_name(region, instance_name)
-script_path = os.path.join(os.path.dirname(__file__), 'gmsa.ps1')
-
-run_powershell_script(instance_id, script_path)

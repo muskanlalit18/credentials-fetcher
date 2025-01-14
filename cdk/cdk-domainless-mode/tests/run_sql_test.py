@@ -1,7 +1,5 @@
 import boto3
-import time
-import os
-import json
+from parse_data_from_json import stack_name, windows_instance_tag, region
 
 """
 This script executes a shell script on the Linux instance via SSM that: 
@@ -12,12 +10,6 @@ c. If the container is found, runs 'klist' and a SQL query inside the container
 This script validates that the Kerberos ticket can be used to access SQL server.
 
 """
-
-with open('data.json', 'r') as file:
-    data = json.load(file)
-
-def get_value(key):
-    return os.environ.get(key, data.get(key.lower()))
 
 def run_shell_script(instance_id, hostname):
 
@@ -142,13 +134,11 @@ def get_instance_id_by_name(region, instance_name):
     return None
 
 
-region = get_value("AWS_REGION")
-instance_name_linux = data["stack_name"]+ '/MyAutoScalingGroup'
-instance_name_windows = data["windows_instance_tag"]
-
-instance_id_linux = get_instance_id_by_name(region, instance_name_linux)
-instance_id_windows = get_instance_id_by_name(region, instance_name_windows)
-
-hostname = get_windows_hostname(instance_id_windows)
-run_shell_script(instance_id_linux, hostname)
+# instance_name_linux = stack_name + '/MyAutoScalingGroup'
+# instance_name_windows = windows_instance_tag
+# instance_id_linux = get_instance_id_by_name(region, instance_name_linux)
+# instance_id_windows = get_instance_id_by_name(region, instance_name_windows)
+#
+# hostname = get_windows_hostname(instance_id_windows)
+# run_shell_script(instance_id_linux, hostname)
 
