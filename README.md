@@ -126,6 +126,65 @@ grpc_cli call unix:/var/credentials-fetcher/socket/credentials_fetcher.sock Dele
 
 ```
 
+### API Integration Testing
+`/api/tests/gmsa_api_integration_test.cpp` contains integration tests for the of the gMSA APIs.
+
+#### Prerequisites
+Follow the instructions in the [Domainless Mode README](cdk/cdk-domainless-mode/README.md) to set up the required infrastructure for testing gMSA on Linux containers.
+
+#### Setup
+Set AWS environment variables
+```
+export AWS_ACCESS_KEY_ID=XXXX
+export AWS_SECRET_ACCESS_KEY=XXXX
+export AWS_SESSION_TOKEN=XXXX
+export AWS_REGION=XXXX
+```
+
+Set Amazon S3 ARN containing the credential spec file. 
+```
+export CF_TEST_CREDSPEC_ARN=XXX
+```
+
+Set standard username, password and domain used for testing
+```
+export CF_TEST_STANDARD_USERNAME=XXXX
+export CF_TEST_STANDARD_USER_PASSWORD=XXXX
+export CF_TEST_DOMAIN=XXXX
+``` 
+
+#### Build && Test
+Follow the instructions from [Standalone mode](#standalone-mode) sections to build the code, generate binaries and start the server. Once the server has started, run integration tests by running
+
+```
+sudo -E api/tests/gmsa_integration_test 
+```
+
+#### Sample output
+```
+> sudo api/tests/gmsa_integration_test 
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from GmsaIntegrationTest
+[ RUN      ] GmsaIntegrationTest.HealthCheck_Test
+[       OK ] GmsaIntegrationTest.HealthCheck_Test (4 ms)
+[ RUN      ] GmsaIntegrationTest.A_AddNonDomainJoinedKerberosLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.A_AddNonDomainJoinedKerberosLeaseMethod_Test (1028 ms)
+[ RUN      ] GmsaIntegrationTest.B_RenewNonDomainJoinedKerberosLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.B_RenewNonDomainJoinedKerberosLeaseMethod_Test (553 ms)
+[ RUN      ] GmsaIntegrationTest.C_DeleteKerberosLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.C_DeleteKerberosLeaseMethod_Test (7 ms)
+[ RUN      ] GmsaIntegrationTest.A_AddKerberosArnLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.A_AddKerberosArnLeaseMethod_Test (768 ms)
+[ RUN      ] GmsaIntegrationTest.B_RenewKerberosArnLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.B_RenewKerberosArnLeaseMethod_Test (691 ms)
+[----------] 6 tests from GmsaIntegrationTest (3054 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (3054 ms total)
+[  PASSED  ] 6 tests.
+```
+
 ### Logging
 
 Logs about request/response to the daemon and any failures.
