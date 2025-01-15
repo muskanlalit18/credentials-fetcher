@@ -22,7 +22,7 @@ Please take a look at data.json for default values.
 If you're testing a new RPM, upload it in the S3 bucket.
 Ensure you have docker running in the background.
 
-1. Update data.json with your personal environment values, and make sure there are no values with "xxxxxxxx"
+1. Update data.json, and make sure there are no values with "xxxxxxxx"
 
 2) 'default' AWS profile with administrator access is needed, a separate/burner AWS account would suffice.
 
@@ -50,6 +50,7 @@ Steps to run tasks in ECS with Credentials-fetcher.
         Once the virtualenv is activated, you can install the required dependencies.
 
         ```
+        $ cd cdk/cdk-domainless-mode
         $ pip install -r requirements.txt
         ```
 

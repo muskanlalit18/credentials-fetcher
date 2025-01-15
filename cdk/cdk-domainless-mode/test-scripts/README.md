@@ -26,6 +26,5 @@ cd credentials-fetcher/cdk/cdk-domainless-mode/test-scripts
 python3 -m venv .venv
 source .venv/bin/activate
 pip install grpcio-tools
-python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. /home/ec2-user/credentials-fetcher/protos/credentialsfetcher.proto
-cp /home/ec2-user/credentials-fetcher/protos/*.py .
+python3 -m grpc_tools.protoc -I/home/ec2-user/credentials-fetcher/protos --python_out=. --grpc_python_out=. credentialsfetcher.proto
 ```
