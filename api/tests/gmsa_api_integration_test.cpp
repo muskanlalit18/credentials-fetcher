@@ -175,7 +175,7 @@ TEST_F( GmsaIntegrationTest, A_AddKerberosArnLeaseMethod_Test )
     // Prepare request
     credentialsfetcher::KerberosArnLeaseRequest request;
 
-    std::string arn = get_environment_var( "CREDSPEC_ARN" );
+    std::string arn = get_environment_var( CF_TEST_CREDSPEC_ARN );
     arn += "#123/WebApp01";
     request.add_credspec_arns( arn );
     request.set_access_key_id( get_environment_var( AWS_ACCESS_KEY_ID ) );
