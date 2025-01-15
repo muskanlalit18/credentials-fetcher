@@ -26,8 +26,8 @@ https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linu
     dnf install -y samba-common-tools
 
     # install custom credentials-fetcher rpm from branch - https://github.com/aws/credentials-fetcher/tree/fixes_for_DNS_and_distinguishedName gMSA credentials management for containers
-    curl -L -O https://github.com/aws/credentials-fetcher/raw/refs/heads/fixes_for_DNS_and_distinguishedName/rpm/credentials-fetcher-1.3.61-0.amzn2023.x86_64.rpm
-    dnf install -y ./credentials-fetcher-1.3.61-0.amzn2023.x86_64.rpm
+    curl -L -O https://github.com/aws/credentials-fetcher/raw/refs/heads/fixes_for_DNS_and_distinguishedName/rpm/credentials-fetcher-<major>.<minor>.<patch>-0.amzn2023.x86_64.rpm
+    dnf install -y ./credentials-fetcher-<major>.<minor>.<patch>-0.amzn2023.x86_64.rpm
 
     # start credentials-fetcher
     systemctl enable credentials-fetcher
@@ -44,7 +44,7 @@ https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linu
     {"username":"username","password":"passw0rd", "domainName":"example.com", "distinguishedName":"CN=WebApp01,OU=DemoOU,OU=Users,OU=example,DC=example,DC=com"}
     ```
 
-- On [Fedora 36](_https://alt.fedoraproject.org/cloud/_) and similar distributions, the binary RPM can be installed as
+- On [Fedora 41](_https://alt.fedoraproject.org/cloud/_) and similar distributions, the binary RPM can be installed as
 `sudo dnf install credentials-fetcher`.
 You can also use yum if dnf is not present.
 The daemon can be started using `sudo systemctl start credentials-fetcher`.
@@ -86,7 +86,106 @@ To start a local dev environment from scratch:
 * ./credentials-fetcher to start the program in non-daemon mode.
 ```
 
-#### Testing
+## Logging
+
+Logs about request/response to the daemon and any failures.
+
+```
+journalctl -u credentials-fetcher
+```
+
+### Default environment variables
+
+| Environment Key             | Examples values                    | Description                                                                                  |
+| :-------------------------- | ---------------------------------- | :------------------------------------------------------------------------------------------- |
+| `CF_KRB_DIR`                | '/var/credentials-fetcher/krbdir'  | _(Default)_ Dir path for storing the kerberos tickets                                        |
+| `CF_UNIX_DOMAIN_SOCKET_DIR` | '/var/credentials-fetcher/socket'  | _(Default)_ Dir path for the domain socker for gRPC communication 'credentials_fetcher.sock' |
+| `CF_LOGGING_DIR`            | '/var/credentials-fetcher/logging' | _(Default)_ Dir Path for log                                                                 |
+| `CF_TEST_DOMAIN_NAME`       | 'contoso.com'                      | Test domain name                                                                             |
+| `CF_TEST_GMSA_ACCOUNT`      | 'webapp01'                         | Test gMSA account name                                                                       |
+
+### Runtime environment variables
+
+| Environment Variable | Examples values                                       | Description                                                                |
+| :------------------- | ----------------------------------------------------- | :------------------------------------------------------------------------- |
+| `CF_CRED_SPEC_FILE`  | '/var/credentials-fetcher/my-credspec.json'           | Path to a credential spec file used as input. (Lease id default: credspec) |
+|                      | '/var/credentials-fetcher/my-credspec.json:myLeaseId' | An optional lease id specified after a colon                               |
+| `CF_GMSA_OU`         | 'CN=Managed Service Accounts'                         | Component of GMSA distinguished name (see docs/cf_gmsa_ou.md)              |
+
+
+## Testing
+
+### Test using Personal CDK Stack
+
+Use the AWS CDK to create 
+- Active Directory Server
+- Windows EC2 instance to manage AD
+- EC2 Linux Containers on Amazon ECS
+- gMSA Account(s) in Active Directory  
+The CDK will create all necessary infrastructure and install the necessary dependencies to run credentials-fetcher on non-domain-joined ECS hosts. Detailed steps to deploy and test using the CDK stack are present [here](https://github.com/aws/credentials-fetcher/blob/mainline/cdk/cdk-domainless-mode/README.md).
+
+### Test APIs using Integration Test Script
+
+`/api/tests/gmsa_api_integration_test.cpp` contains integration tests for the of the gMSA APIs.
+
+#### Prerequisites
+Follow the instructions in the [Domainless Mode README](cdk/cdk-domainless-mode/README.md) to set up the required infrastructure for testing gMSA on Linux containers.
+
+#### Setup
+Set AWS environment variables
+```
+export AWS_ACCESS_KEY_ID=XXXX
+export AWS_SECRET_ACCESS_KEY=XXXX
+export AWS_SESSION_TOKEN=XXXX
+export AWS_REGION=XXXX
+```
+
+Set Amazon S3 ARN containing the credential spec file. 
+```
+export CF_TEST_CREDSPEC_ARN=XXX
+```
+
+Set standard username, password and domain used for testing
+```
+export CF_TEST_STANDARD_USERNAME=XXXX
+export CF_TEST_STANDARD_USER_PASSWORD=XXXX
+export CF_TEST_DOMAIN=XXXX
+``` 
+
+#### Build && Test
+Follow the instructions from [Standalone mode](#standalone-mode) sections to build the code, generate binaries and start the server. Once the server has started, run integration tests by running
+
+```
+cd credentials-fetcher/build/
+sudo -E api/tests/gmsa_api_integration_test 
+```
+
+#### Sample output
+```
+> sudo api/tests/gmsa_api_integration_test 
+[==========] Running 6 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 6 tests from GmsaIntegrationTest
+[ RUN      ] GmsaIntegrationTest.HealthCheck_Test
+[       OK ] GmsaIntegrationTest.HealthCheck_Test (4 ms)
+[ RUN      ] GmsaIntegrationTest.A_AddNonDomainJoinedKerberosLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.A_AddNonDomainJoinedKerberosLeaseMethod_Test (1028 ms)
+[ RUN      ] GmsaIntegrationTest.B_RenewNonDomainJoinedKerberosLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.B_RenewNonDomainJoinedKerberosLeaseMethod_Test (553 ms)
+[ RUN      ] GmsaIntegrationTest.C_DeleteKerberosLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.C_DeleteKerberosLeaseMethod_Test (7 ms)
+[ RUN      ] GmsaIntegrationTest.A_AddKerberosArnLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.A_AddKerberosArnLeaseMethod_Test (768 ms)
+[ RUN      ] GmsaIntegrationTest.B_RenewKerberosArnLeaseMethod_Test
+[       OK ] GmsaIntegrationTest.B_RenewKerberosArnLeaseMethod_Test (691 ms)
+[----------] 6 tests from GmsaIntegrationTest (3054 ms total)
+
+[----------] Global test environment tear-down
+[==========] 6 tests from 1 test suite ran. (3054 ms total)
+[  PASSED  ] 6 tests.
+```
+
+### Testing Tips without using CDK stack or Test Scripts
 
 To communicate with the daemon over gRPC, install grpc-cli. For example
 `sudo yum install grpc-cli`
@@ -125,92 +224,6 @@ grpc_cli call unix:/var/credentials-fetcher/socket/credentials_fetcher.sock Dele
     deleted_kerberos_file_paths - Paths associated to the Kerberos tickets deleted corresponding to the gMSA accounts
 
 ```
-
-### API Integration Testing
-`/api/tests/gmsa_api_integration_test.cpp` contains integration tests for the of the gMSA APIs.
-
-#### Prerequisites
-Follow the instructions in the [Domainless Mode README](cdk/cdk-domainless-mode/README.md) to set up the required infrastructure for testing gMSA on Linux containers.
-
-#### Setup
-Set AWS environment variables
-```
-export AWS_ACCESS_KEY_ID=XXXX
-export AWS_SECRET_ACCESS_KEY=XXXX
-export AWS_SESSION_TOKEN=XXXX
-export AWS_REGION=XXXX
-```
-
-Set Amazon S3 ARN containing the credential spec file. 
-```
-export CF_TEST_CREDSPEC_ARN=XXX
-```
-
-Set standard username, password and domain used for testing
-```
-export CF_TEST_STANDARD_USERNAME=XXXX
-export CF_TEST_STANDARD_USER_PASSWORD=XXXX
-export CF_TEST_DOMAIN=XXXX
-``` 
-
-#### Build && Test
-Follow the instructions from [Standalone mode](#standalone-mode) sections to build the code, generate binaries and start the server. Once the server has started, run integration tests by running
-
-```
-sudo -E api/tests/gmsa_integration_test 
-```
-
-#### Sample output
-```
-> sudo api/tests/gmsa_integration_test 
-[==========] Running 6 tests from 1 test suite.
-[----------] Global test environment set-up.
-[----------] 6 tests from GmsaIntegrationTest
-[ RUN      ] GmsaIntegrationTest.HealthCheck_Test
-[       OK ] GmsaIntegrationTest.HealthCheck_Test (4 ms)
-[ RUN      ] GmsaIntegrationTest.A_AddNonDomainJoinedKerberosLeaseMethod_Test
-[       OK ] GmsaIntegrationTest.A_AddNonDomainJoinedKerberosLeaseMethod_Test (1028 ms)
-[ RUN      ] GmsaIntegrationTest.B_RenewNonDomainJoinedKerberosLeaseMethod_Test
-[       OK ] GmsaIntegrationTest.B_RenewNonDomainJoinedKerberosLeaseMethod_Test (553 ms)
-[ RUN      ] GmsaIntegrationTest.C_DeleteKerberosLeaseMethod_Test
-[       OK ] GmsaIntegrationTest.C_DeleteKerberosLeaseMethod_Test (7 ms)
-[ RUN      ] GmsaIntegrationTest.A_AddKerberosArnLeaseMethod_Test
-[       OK ] GmsaIntegrationTest.A_AddKerberosArnLeaseMethod_Test (768 ms)
-[ RUN      ] GmsaIntegrationTest.B_RenewKerberosArnLeaseMethod_Test
-[       OK ] GmsaIntegrationTest.B_RenewKerberosArnLeaseMethod_Test (691 ms)
-[----------] 6 tests from GmsaIntegrationTest (3054 ms total)
-
-[----------] Global test environment tear-down
-[==========] 6 tests from 1 test suite ran. (3054 ms total)
-[  PASSED  ] 6 tests.
-```
-
-### Logging
-
-Logs about request/response to the daemon and any failures.
-
-```
-journalctl -u credentials-fetcher
-```
-
-#### Default environment variables
-
-| Environment Key             | Examples values                    | Description                                                                                  |
-| :-------------------------- | ---------------------------------- | :------------------------------------------------------------------------------------------- |
-| `CF_KRB_DIR`                | '/var/credentials-fetcher/krbdir'  | _(Default)_ Dir path for storing the kerberos tickets                                        |
-| `CF_UNIX_DOMAIN_SOCKET_DIR` | '/var/credentials-fetcher/socket'  | _(Default)_ Dir path for the domain socker for gRPC communication 'credentials_fetcher.sock' |
-| `CF_LOGGING_DIR`            | '/var/credentials-fetcher/logging' | _(Default)_ Dir Path for log                                                                 |
-| `CF_TEST_DOMAIN_NAME`       | 'contoso.com'                      | Test domain name                                                                             |
-| `CF_TEST_GMSA_ACCOUNT`      | 'webapp01'                         | Test gMSA account name                                                                       |
-
-#### Runtime environment variables
-
-| Environment Variable | Examples values                                       | Description                                                                |
-| :------------------- | ----------------------------------------------------- | :------------------------------------------------------------------------- |
-| `CF_CRED_SPEC_FILE`  | '/var/credentials-fetcher/my-credspec.json'           | Path to a credential spec file used as input. (Lease id default: credspec) |
-|                      | '/var/credentials-fetcher/my-credspec.json:myLeaseId' | An optional lease id specified after a colon                               |
-| `CF_GMSA_OU`         | 'CN=Managed Service Accounts'                         | Component of GMSA distinguished name (see docs/cf_gmsa_ou.md)              |
-
 
 ### Examples
 
