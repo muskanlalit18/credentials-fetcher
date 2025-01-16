@@ -194,9 +194,8 @@ endif()
 add_custom_command(
         TARGET credentials-fetcherd
         PRE_LINK
-        COMMAND bash -c  "CURR_DIR=$PWD && echo $CURR_DIR && cd ${CMAKE_CURRENT_SOURCE_DIR}/auth/kerberos/src/utf16_decode && ./build-using-csc.sh Program.cs && cp Program.exe $CURR_DIR/credentials_fetcher_utf16_private.exe && cp Program.runtimeconfig.json $CURR_DIR/credentials_fetcher_utf16_private.runtimeconfig.json"
+        COMMAND bash -c "CURR_DIR=$PWD && echo $CURR_DIR && cd ${CMAKE_CURRENT_SOURCE_DIR}/auth/kerberos/src/utf16_decode && ./build-using-native-aot.sh && cp bin/Release/net8.0/linux-x64/publish/utf16_decode $CURR_DIR/credentials_fetcher_utf16_private"
         VERBATIM)
-
 target_include_directories(credentials-fetcherd PUBLIC common)
 
 if(${Protobuf_VERSION} VERSION_GREATER_EQUAL "3.21.0.0")
@@ -222,12 +221,11 @@ install(FILES ${CMAKE_BINARY_DIR}/credentials-fetcherd
 
 install(FILES ${CMAKE_SOURCE_DIR}/scripts/systemd/credentials-fetcher.service
         DESTINATION "/usr/lib/systemd/system/")
-install(FILES ${CMAKE_BINARY_DIR}/credentials_fetcher_utf16_private.exe
+
+install(FILES ${CMAKE_BINARY_DIR}/credentials_fetcher_utf16_private
         DESTINATION "/usr/sbin/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
-install(FILES ${CMAKE_BINARY_DIR}/credentials_fetcher_utf16_private.runtimeconfig.json
-        DESTINATION "/usr/sbin/"
-        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
+
 install(FILES ${CMAKE_BINARY_DIR}/krb5.conf
         DESTINATION "/usr/sbin/"
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
@@ -238,3 +236,20 @@ add_test(NAME check_help COMMAND ${CMAKE_BINARY_DIR}/credentials-fetcherd "--hel
 add_test(NAME run_self_test COMMAND ${CMAKE_BINARY_DIR}/credentials-fetcherd "--self_test")
 set_tests_properties(check_help PROPERTIES WILL_FAIL TRUE)
 set_tests_properties(run_self_test PROPERTIES WILL_FAIL FALSE)
+
+
+find_package(GTest CONFIG REQUIRED)
+set(TEST_FILES test/tester.cpp)
+add_executable(credentials-fetcher-test ${metadata} ${TEST_FILES} common)
+target_include_directories(credentials-fetcher-test
+        PUBLIC
+        common
+        ${GLIB_INCLUDE_DIR}
+        ${GLIB_CONFIG_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(credentials-fetcher-test gtest gtest_main
+        systemd
+        glib-2.0
+        jsoncpp ssl crypto
+        krb5 kadm5srv_mit kdb5 gssrpc gssapi_krb5 gssrpc k5crypto
+        com_err krb5support resolv)

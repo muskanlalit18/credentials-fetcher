@@ -12,7 +12,7 @@ const std::vector<char> invalid_characters = { '&',  '|', ';', ':',  '$', '*', '
                                                '>',  '!', ' ', '\\', '.', ']', '[', '+',
                                                '\'', '`', '~', '}',  '{', '"', ')', '(' };
 
-const std::string install_path_for_decode_exe = "/usr/sbin/credentials_fetcher_utf16_private.exe";
+const std::string install_path_for_decode_exe = "/usr/sbin/credentials_fetcher_utf16_private";
 
 const std::string install_path_for_aws_cli = "/usr/bin/aws";
 
@@ -121,7 +121,9 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
 
     if ( domain_name.empty() || gmsa_account_name.empty() )
     {
-        cf_logger.logger( LOG_ERR, "ERROR: %s:%d null args", __func__, __LINE__ );
+        std::string log_message =
+            "ERROR: " + std::string( __func__ ) + ": " + std::to_string( __LINE__ ) + " null args";
+        cf_logger.logger( LOG_ERR, log_message.c_str() );
         std::string err_msg = std::string( "domain_name " + domain_name + " or gmsa_account_name " +
                                            gmsa_account_name + " is empty" );
         return std::make_pair( -1, err_msg );
@@ -152,7 +154,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
             {
                 distinguished_name = distinguished_name_result.second;
             }
-            std::string log_str = "Found dn = " + distinguished_name + "\n";
+            std::string log_str = "Found dn = " + distinguished_name;
             cf_logger.logger( LOG_INFO, log_str.c_str() );
         }
 
@@ -169,7 +171,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
             {
                 std::string log_str = ldap_search_result.second.substr( 0, pos );
                 log_str = "ldapsearch successful with FQDN = " + fqdn + ", cmd = " + log_str + "," +
-                          "search_string = " + search_string + "\n";
+                          "search_string = " + search_string;
                 std::cerr << log_str << std::endl;
                 cf_logger.logger( LOG_INFO, log_str.c_str() );
             }
@@ -211,7 +213,7 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
     std::string default_principal = "'" + gmsa_account_name + "$'" + "@" + domain_name;
 
     /* Pipe password to the utf16 decoder and kinit */
-    std::string kinit_cmd = std::string( "dotnet " ) + std::string( install_path_for_decode_exe ) +
+    std::string kinit_cmd = std::string( install_path_for_decode_exe ) +
                             std::string( " | kinit " ) + std::string( " -c " ) + krb_cc_name +
                             " -V " + default_principal;
     std::cerr << Util::getCurrentTime() << '\t' << "INFO:" << kinit_cmd << std::endl;
@@ -221,7 +223,9 @@ std::pair<int, std::string> fetch_gmsa_password_and_create_krb_ticket(
         perror( "kinit failed" );
         OPENSSL_cleanse( password_found_result.second, password_found_result.first );
         OPENSSL_free( password_found_result.second );
-        cf_logger.logger( LOG_ERR, "ERROR: %s:%d kinit failed", __func__, __LINE__ );
+        std::string log_message = "ERROR: " + std::string( __func__ ) + " : " +
+                                  std::to_string( __LINE__ ) + " kinit failed";
+        cf_logger.logger( LOG_ERR, log_message.c_str() );
         std::cerr << Util::getCurrentTime() << '\t' << "ERROR: kinit failed" << std::endl;
         return std::make_pair( -1, std::string( "kinit failed" ) );
     }
@@ -497,7 +501,7 @@ std::string renew_gmsa_ticket( krb_ticket_info_t* krb_ticket, std::string domain
     std::string renewed_krb_ticket_path;
     std::pair<int, std::string> gmsa_ticket_result;
     std::string krb_cc_name = krb_ticket->krb_file_path;
-
+    std::string log_message;
     // gMSA kerberos ticket generation needs to have ldap over kerberos
     // if the ticket exists for the machine/user already reuse it for getting gMSA password else
     // retry the ticket creation again after generating user/machine kerberos ticket
@@ -510,16 +514,16 @@ std::string renew_gmsa_ticket( krb_ticket_info_t* krb_ticket, std::string domain
         {
             if ( i == 0 )
             {
-                cf_logger.logger( LOG_WARNING,
-                                  "WARNING: Cannot get gMSA krb ticket "
-                                  "because of expired user/machine ticket, "
-                                  "will be retried automatically, service_account_name = %s",
-                                  krb_ticket->service_account_name.c_str() );
+                log_message = "WARNING: Cannot get gMSA krb ticket because of expired user/machine "
+                              "ticket, will be retried automatically, service_account_name = " +
+                              krb_ticket->service_account_name;
+                cf_logger.logger( LOG_WARNING, log_message.c_str() );
             }
             else
             {
-                cf_logger.logger( LOG_ERR, "ERROR: Cannot get gMSA krb ticket using account %s",
-                                  krb_ticket->service_account_name.c_str() );
+                log_message = "ERROR: Cannot get gMSA krb ticket using account " +
+                              krb_ticket->service_account_name;
+                cf_logger.logger( LOG_ERR, log_message.c_str() );
 
                 std::cerr << Util::getCurrentTime() << '\t'
                           << "ERROR: Cannot get gMSA krb ticket using account" << std::endl;
@@ -534,7 +538,9 @@ std::string renew_gmsa_ticket( krb_ticket_info_t* krb_ticket, std::string domain
 
                 if ( status.first < 0 )
                 {
-                    cf_logger.logger( LOG_ERR, "ERROR %d: Cannot get user krb ticket", status );
+                    log_message =
+                        "ERROR " + std::to_string( status.first ) + ": Cannot get user krb ticket";
+                    cf_logger.logger( LOG_ERR, log_message.c_str() );
                     std::cerr << Util::getCurrentTime() << '\t'
                               << "ERROR: Cannot get user krb ticket" << std::endl;
                 }

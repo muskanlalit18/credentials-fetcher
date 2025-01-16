@@ -11,16 +11,19 @@ Runs a couple of tasks in the ECS-optimized Linux instance using gMSA in domainl
 Disclaimer
 This CDK and scripts are only for test, please modify as needed.
 
+Create the following environment variables: 
+1. AWS_REGION
+2. S3_PREFIX
+3. KEY_PAIR_NAME
+4. PREFIX_LIST
+
 Pre-requisites
 Please take a look at data.json for default values.
-1) Create secret in Secrets Manager as per https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linux-gmsa-setup with the following values:
-   This is the same secret in data.json.
-   ```
-    Secret key  Secret value
-    username    standarduser01
-    password    p@ssw0rd
-    domainName  activedirectory1.com
-    ```
+If you're testing a new RPM, upload it in the S3 bucket.
+Ensure you have docker running in the background.
+
+1. Update data.json, and make sure there are no values with "xxxxxxxx"
+
 2) 'default' AWS profile with administrator access is needed, a separate/burner AWS account would suffice.
 
 Steps to run tasks in ECS with Credentials-fetcher.
@@ -47,6 +50,7 @@ Steps to run tasks in ECS with Credentials-fetcher.
         Once the virtualenv is activated, you can install the required dependencies.
 
         ```
+        $ cd cdk/cdk-domainless-mode
         $ pip install -r requirements.txt
         ```
 
@@ -66,16 +70,24 @@ Steps to run tasks in ECS with Credentials-fetcher.
         [10:29:46] Command line arguments: {
         _: [ 'bootstrap' ],
     ```
+   
+6) Run End-To-End SQL test with Credentials Fetcher ECS Domainless Setup
+   ```aiignore
+      (.venv) tests % python3 run_e2e_test.py
+   ```
+7) Done: If everything worked as expected, you should see an output like this in the console:
+    ```
+            EmpID EmpName Designation DepartmentJoiningDate
+    ----------- -------------------------------------------------- -------------------------------------------------- -------------------------------------------------------------------------
+    1 CHIN YEN LAB ASSISTANT LAB2022-03-05 03:57:09.967
+    2 MIKE PEARL SENIOR ACCOUNTANT ACCOUNTS2022-03-05 03:57:09.967
+    3 GREEN FIELD ACCOUNTANT ACCOUNTS2022-03-05 03:57:09.967
+    4 DEWANE PAUL PROGRAMMER IT2022-03-05 03:57:09.967
+    5 MATTS SR. PROGRAMMER IT2022-03-05 03:57:09.967
+    6 PLANK OTO ACCOUNTANT ACCOUNTS2022-03-05 03:57:09.967
 
-7) Run copy_credspecs_and_create_task_defs.py to create and copy credspecs to S3 bucket and also to register ECS task definitions.
-    ```
-     (.venv) cdk % python3 copy_credspecs_and_create_task_defs.py
+    (6 rows affected)
     ```
 
-8) After CloudFormation stack is complete, launch tasks using run_tasks.py. (You can install a test RPM into the ECS intance here, if you like)
-    ```
-        (.venv) samiull@6cb1339dd38d cdk % python3 run_tasks.py
-    ```
-9) Done: You can see the tasks in EC2 Console
 
 
