@@ -22,6 +22,6 @@
   "ecr_repo_name": "my-ecr-repo",
   "docker_image_tag": "latest",
   "dockerfile_path": "./Dockerfile",
-  "rpm_file": "credentials-fetcher-1.3.65-0.amzn2023.x86_64.rpm",
+  "rpm_file": "xxxxxxxx",
   "max_tasks_per_instance": 3
 }
