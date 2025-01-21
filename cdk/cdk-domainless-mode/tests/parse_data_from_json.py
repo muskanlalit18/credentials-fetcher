@@ -27,6 +27,7 @@ username = data["username"]
 password = data["password"]
 windows_instance_tag = data["windows_instance_tag"]
 domain_admin_password = data["domain_admin_password"]
+containers_per_instance = data["max_tasks_per_instance"] * 10 # maximum number of container definitions per task is 10 (ref: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-quotas.html)
 
 if "XXX" in bucket_name:
     print("S3_PREFIX is not setup correctly, please set it and retry")
