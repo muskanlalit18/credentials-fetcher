@@ -1,4 +1,5 @@
 import boto3
+import sys
 from parse_data_from_json import stack_name, windows_instance_tag, region
 
 """
@@ -24,6 +25,8 @@ def run_shell_script(instance_id, hostname):
         '    echo "Container ID: $IMAGEID"',
         '    echo "Running commands inside the container:"',
         '    echo "klist && sqlcmd -S $HOSTNAME.contoso.com -C -Q \'SELECT * FROM employeesdb.dbo.employeestable;\'" | docker exec -i $IMAGEID env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mssql-tools/bin bash',
+        '    SQL_EXIT_CODE=$?',
+        '    echo "SQL_SUCCESS_MARKER: $SQL_EXIT_CODE"', 
         'else',
         '    echo "No container found with my-ecr-repo:latest"',
         'fi'
@@ -60,12 +63,24 @@ def run_shell_script(instance_id, hostname):
     
     print(f"Command output:\n{output.get('StandardOutputContent', '')}")
 
+    sql_success = False 
+
     if output['Status'] == 'Success':
         print(f"Command status: Success")
+        # Look for the SQL success marker in the output
+        output_content = output.get('StandardOutputContent', '')
+        for line in output_content.splitlines():
+            if line.startswith('SQL_SUCCESS_MARKER: '):
+                exit_code = int(line.split(': ')[1])
+                if exit_code == 0:
+                    sql_success = True
+                break
     else:
         print(f"Command failed with status: {output['Status']}")
         print(f"Error: {output.get('StandardErrorContent', 'No error content available')}")
         raise Exception(f"Command execution failed with status: {output['Status']}")
+    
+    return sql_success 
     
 def get_windows_hostname(instance_id):
     commands = [

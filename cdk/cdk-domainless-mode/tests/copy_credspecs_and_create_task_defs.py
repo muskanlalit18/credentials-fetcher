@@ -86,6 +86,7 @@ def modify_task_definition(task_definition, ecs_cluster_arn, bucket_arn, s3_key)
     task_definition["compatibilities"].append("FARGATE")
 
     for container_def in task_definition['containerDefinitions']:
+        container_def['credentialSpecs']=[]
         credspec = container_def['credentialSpecs']
         credspec = [d for d in credspec if 'credentialspecdomainless' not in d]
         credspec.append(f"credentialspecdomainless:{bucket_arn}/{s3_key}")

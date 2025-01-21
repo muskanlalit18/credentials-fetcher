@@ -33,29 +33,27 @@ for configuring Group Managed Service Accounts (gMSA) and related AWS resources.
 """
 
 def run_powershell_script(instance_id, script_path):
-
-    with open(script_path, 'r') as file:
-        script_content = file.read()
-
-    script_content = script_content.replace("INPUTPASSWORD",
-                                            domain_admin_password)
-    script_content = script_content.replace("DOMAINNAME", directory_name)
-    script_content = script_content.replace("NETBIOS_NAME", netbios_name)
-    script_content = script_content.replace("NUMBER_OF_GMSA_ACCOUNTS", str(number_of_gmsa_accounts))
-    script_content = script_content.replace("BUCKET_NAME", bucket_name)
-    
-    ssm = boto3.client('ssm')
-
-    response = ssm.send_command(
-        InstanceIds=[instance_id],
-        DocumentName="AWS-RunPowerShellScript",
-        Parameters={'commands': [script_content]}
-    )
-
-    command_id = response['Command']['CommandId']
-
-    waiter = ssm.get_waiter('command_executed')
     try:
+        with open(script_path, 'r') as file:
+            script_content = file.read()
+
+        script_content = script_content.replace("INPUTPASSWORD", domain_admin_password)
+        script_content = script_content.replace("DOMAINNAME", directory_name)
+        script_content = script_content.replace("NETBIOS_NAME", netbios_name)
+        script_content = script_content.replace("NUMBER_OF_GMSA_ACCOUNTS", str(number_of_gmsa_accounts))
+        script_content = script_content.replace("BUCKET_NAME", bucket_name)
+        
+        ssm = boto3.client('ssm')
+
+        response = ssm.send_command(
+            InstanceIds=[instance_id],
+            DocumentName="AWS-RunPowerShellScript",
+            Parameters={'commands': [script_content]}
+        )
+
+        command_id = response['Command']['CommandId']
+
+        waiter = ssm.get_waiter('command_executed')
         waiter.wait(
             CommandId=command_id,
             InstanceId=instance_id,
@@ -64,25 +62,26 @@ def run_powershell_script(instance_id, script_path):
                 'MaxAttempts': 50
             }
         )
+
+        output = ssm.get_command_invocation(
+            CommandId=command_id,
+            InstanceId=instance_id
+        )
+        
+        print(f"Command output:\n{output.get('StandardOutputContent', '')}")
+
+        if output['Status'] == 'Success':
+            print(f"Command status: Success")
+            return True
+        else:
+            print(f"Command failed: {script_content}")
+            print(f"Error: {output['StandardErrorContent']}")
+            return False
+
     except Exception as e:
+        print(f"An error occurred: {str(e)}")
         print(f"Command failed: {script_content}")
-        print(f"Error: {str(e)}")
-        raise
-
-    output = ssm.get_command_invocation(
-        CommandId=command_id,
-        InstanceId=instance_id
-    )
-    
-    print(f"Command output:\n{output.get('StandardOutputContent', '')}")
-
-    if output['Status'] == 'Success':
-        print(f"Command status: Success")
-    
-    if output['Status'] != 'Success':
-        print(f"Command failed: {script_content}")
-        print(f"Error: {output['StandardErrorContent']}")
-        raise Exception(f"Command execution failed: {script_content}")
+        return False
 
 def get_instance_id_by_name(region, instance_name):
 
