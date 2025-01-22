@@ -1,8 +1,5 @@
 # Credentials Fetcher
 
-NOTE: This branch is un-released, additional tests are not complete.
---------------------------------------------------------------------
-
 `credentials-fetcher` is a Linux daemon that retrieves gMSA credentials from Active Directory over LDAP. It creates and refreshes kerberos tickets from gMSA credentials. Kerberos tickets can be used by containers to run apps/services that authenticate using Active Directory.
 
 This daemon works in a similar way as ccg.exe and the gMSA plugin in Windows as described in - https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-containers/manage-serviceaccounts#gmsa-architecture-and-improvements
@@ -26,7 +23,7 @@ https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linu
     dnf install -y samba-common-tools
 
     # install custom credentials-fetcher rpm from branch - https://github.com/aws/credentials-fetcher/tree/fixes_for_DNS_and_distinguishedName gMSA credentials management for containers
-    curl -L -O https://github.com/aws/credentials-fetcher/raw/refs/heads/fixes_for_DNS_and_distinguishedName/rpm/credentials-fetcher-<major>.<minor>.<patch>-0.amzn2023.x86_64.rpm
+    curl -L -O https://github.com/aws/credentials-fetcher/raw/refs/heads/mainline/rpm/credentials-fetcher-<major>.<minor>.<patch>-0.amzn2023.x86_64.rpm
     dnf install -y ./credentials-fetcher-<major>.<minor>.<patch>-0.amzn2023.x86_64.rpm
 
     # start credentials-fetcher
