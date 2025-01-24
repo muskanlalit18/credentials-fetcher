@@ -332,7 +332,7 @@ grpc_cli call unix:/var/credentials-fetcher/socket/credentials_fetcher.sock Dele
 
 ## Compatibility
 
-Running the Credentials-fetcher outside of Linux distributions is not
+On Amazon Linux 2023, only Linux x86_64 architecture is supported. Running the Credentials-fetcher outside of Linux distributions is not
 supported.
 
 ## Contributing
