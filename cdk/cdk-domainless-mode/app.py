@@ -37,6 +37,7 @@ cluster_name = data["cluster_name"]
 docker_image_tag = data["docker_image_tag"]
 dockerfile_path = data["dockerfile_path"]
 ecr_repo_name = data["ecr_repo_name"]
+rpm_file = data["rpm_file"]
 
 app = cdk.App()
 
@@ -68,7 +69,9 @@ ecs_cluster = cdk_stack.create_ecs_cluster( cluster_name,
                                             key_pair=cdk_stack.key_pair,
                                             number_of_gmsa_accounts=number_of_gmsa_accounts,
                                             vpc = cdk_stack.vpc,
-                                            security_group=cdk_stack.security_group, s3_bucket=s3_bucket)
+                                            security_group=cdk_stack.security_group,
+                                            rpm_file=rpm_file,
+                                            s3_bucket=s3_bucket)
 ecs_cluster.node.add_dependency(windows_instance)
 
 task_definition = cdk_stack.create_task_definition(task_definition_template_name=task_definition_template_name)

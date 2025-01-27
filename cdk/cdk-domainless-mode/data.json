@@ -9,7 +9,7 @@
   "netbios_name" : "contoso",
   "windows_instance_tag": "ActiveDirectoryManagementInstance",
   "linux_instance_tag": "CredentialsFetcherLinuxInstance",
-  "s3_prefix": "xxxxxxx",
+  "s3_prefix": "xxxxxxxx",
   "s3_bucket_suffix": "-credentials-fetcher-pre-created-bucket",
   "number_of_gmsa_accounts": 10,
   "aws_profile_name": "default",
@@ -22,5 +22,6 @@
   "ecr_repo_name": "my-ecr-repo",
   "docker_image_tag": "latest",
   "dockerfile_path": "./Dockerfile",
+  "rpm_file": "xxxxxxxx",
   "max_tasks_per_instance": 3
 }
