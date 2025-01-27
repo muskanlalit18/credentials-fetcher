@@ -247,7 +247,7 @@ class CdkStack(Stack):
                                 key_pair: ec2.KeyPair,
                                 number_of_gmsa_accounts: int,
                                 vpc : str,
-                                security_group : str, rpm_file:str, s3_bucket:str):
+                                security_group : str, s3_bucket:str):
 
         machine_image = ecs.EcsOptimizedImage.amazon_linux2023(hardware_type=ecs.AmiHardwareType.STANDARD)
         instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.XLARGE)
@@ -261,7 +261,7 @@ class CdkStack(Stack):
         # add role for Directory Service
         role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AWSDirectoryServiceFullAccess"))
 
-        user_data_script = self.setup_linux_userdata(instance_tag, password, domain_name, key_pair.key_pair_name, number_of_gmsa_accounts, rpm_file, s3_bucket)
+        user_data_script = self.setup_linux_userdata(instance_tag, password, domain_name, key_pair.key_pair_name, number_of_gmsa_accounts, s3_bucket)
         user_data = ec2.UserData.for_linux()
         user_data.add_commands(user_data_script)
         #user_data = cdk.Fn.base64(user_data.render())
@@ -300,13 +300,14 @@ class CdkStack(Stack):
     def setup_linux_userdata (self, instance_tag: str, password: str,
                                 domain_name: str,
                                 key_name: str,
-                                number_of_gmsa_accounts: int, rpm_file: str, s3_bucket: str):
+                                number_of_gmsa_accounts: int, s3_bucket: str):
         #In instance, 'cat /var/lib/cloud/instance/user-data.txt'
         # get random uuid string
         random_uuid_str =  str(uuid.uuid4())
         ecs_cluster_name="ecs-load-test-" + random_uuid_str
         user_data_script = '''
             echo "ECS_GMSA_SUPPORTED=true" >> /etc/ecs/ecs.config
+            dnf install -y dotnet
             dnf install -y realmd
             dnf install -y oddjob
             dnf install -y oddjob-mkhomedir
@@ -314,28 +315,31 @@ class CdkStack(Stack):
             dnf install -y adcli
             dnf install -y krb5-workstation
             dnf install -y samba-common-tools
-            if aws s3 ls "s3://BUCKET_NAME/RPM_FILE" &> /dev/null; then
-                echo "RPM file found in S3 bucket. Transferring to EC2 instance..." >> /tmp/userdata.log
-                aws s3 cp s3://BUCKET_NAME/RPM_FILE .
-                dnf install -y ./RPM_FILE
+            
+            # Find latest credentials-fetcher RPM
+            latest_rpm=$(aws s3 ls s3://BUCKET_NAME/ | grep 'credentials-fetcher-.*\.rpm' | sort -k1,2 | grep -E 'credentials-fetcher-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.amzn2023\.x86_64\.rpm' | tail -n 1 | awk '{print $4}')
+    
+            if [ ! -z "$latest_rpm" ]; then
+                echo "Latest credentials-fetcher RPM found: $latest_rpm" >> /tmp/userdata.log
+                aws s3 cp s3://BUCKET_NAME/$latest_rpm .
+                dnf install -y ./$latest_rpm
                 if [ $? -ne 0 ]; then
-                    echo "RPM file installation failed. Installing credentials-fetcher..." >> /tmp/userdata.log
+                    echo "RPM file installation failed. Installing default credentials-fetcher..." >> /tmp/userdata.log
                     dnf install -y credentials-fetcher
                 else
                     echo "RPM file installation successful." >> /tmp/userdata.log
                 fi
             else
-                echo "RPM file not found in S3 bucket. Installing credentials-fetcher..." >> /tmp/userdata.log
+                echo "No credentials-fetcher RPM found in S3 bucket. Installing default version..." >> /tmp/userdata.log
                 dnf install -y credentials-fetcher
             fi
+            
             systemctl enable credentials-fetcher
             systemctl start credentials-fetcher
             systemctl enable --now --no-block ecs.service
-        user_data_script += "echo ECS_CLUSTER=" + ecs_cluster_name + " >> /etc/ecs/ecs.config"
+            user_data_script += "echo ECS_CLUSTER=" + ecs_cluster_name + " >> /etc/ecs/ecs.config"
         '''
         user_data_script = user_data_script.replace('BUCKET_NAME', s3_bucket)
-        user_data_script = user_data_script.replace('RPM_FILE', rpm_file)
-        
         return user_data_script
 
     # Save json values in secrets manager
