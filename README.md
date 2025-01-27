@@ -21,10 +21,7 @@ https://docs.aws.amazon.com/AmazonECS/latest/developerguide/linux-gmsa.html#linu
     dnf install -y adcli
     dnf install -y krb5-workstation
     dnf install -y samba-common-tools
-
-    # install custom credentials-fetcher rpm from branch - https://github.com/aws/credentials-fetcher/tree/fixes_for_DNS_and_distinguishedName gMSA credentials management for containers
-    curl -L -O https://github.com/aws/credentials-fetcher/raw/refs/heads/mainline/rpm/credentials-fetcher-<major>.<minor>.<patch>-0.amzn2023.x86_64.rpm
-    dnf install -y ./credentials-fetcher-<major>.<minor>.<patch>-0.amzn2023.x86_64.rpm
+    dnf install -y credentials-fetcher
 
     # start credentials-fetcher
     systemctl enable credentials-fetcher
@@ -79,8 +76,8 @@ To start a local dev environment from scratch:
 ```
 * Clone the Git repository.
 * cd credentials-fetcher && mkdir build
-* cd build && cmake ../ && make -j
-* ./credentials-fetcher to start the program in non-daemon mode.
+* cd build && cmake ../ && make -j && make install 
+* ./credentials-fetcherd to start the program in non-daemon mode.
 ```
 
 ## Logging
