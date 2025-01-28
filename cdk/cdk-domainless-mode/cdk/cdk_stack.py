@@ -307,6 +307,7 @@ class CdkStack(Stack):
         ecs_cluster_name="ecs-load-test-" + random_uuid_str
         user_data_script = '''
             echo "ECS_GMSA_SUPPORTED=true" >> /etc/ecs/ecs.config
+            dnf install -y dotnet
             dnf install -y realmd
             dnf install -y oddjob
             dnf install -y oddjob-mkhomedir
@@ -335,7 +336,6 @@ class CdkStack(Stack):
         '''
         user_data_script = user_data_script.replace('BUCKET_NAME', s3_bucket)
         user_data_script = user_data_script.replace('RPM_FILE', rpm_file)
-        
         return user_data_script
 
     # Save json values in secrets manager

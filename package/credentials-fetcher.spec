@@ -23,6 +23,7 @@ BuildRequires:  aws-sdk-cpp-devel aws-sdk-cpp aws-sdk-cpp-static
 %endif
 
 BuildRequires:  dotnet-sdk-8.0
+Requires: dotnet-runtime-8.0
 
 Requires: bind-utils openldap openldap-clients awscli jsoncpp
 # No one likes you i686
@@ -64,7 +65,8 @@ ctest3
 %license LICENSE
 # https://docs.fedoraproject.org/en-US/packaging-guidelines/LicensingGuidelines/
 %doc CONTRIBUTING.md NOTICE README.md
-%attr(0700, -, -) %{_sbindir}/credentials_fetcher_utf16_private
+%attr(0700, -, -) %{_sbindir}/credentials_fetcher_utf16_private.exe
+%attr(0700, -, -) %{_sbindir}/credentials_fetcher_utf16_private.runtimeconfig.json
 %attr(0755, -, -) %{_sbindir}/krb5.conf
 
 %changelog
