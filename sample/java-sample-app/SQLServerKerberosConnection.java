@@ -1,7 +1,5 @@
 import java.sql.*;
 
-// Replace user, domain name, and server name before compiling
-
 public class SQLServerKerberosConnection {
     public static void main(String[] args) {
 
