@@ -73,7 +73,7 @@ ctest3
 
 %changelog
 
-* Wed Feb 12 Anushka Srinivasa <as14692@nyu.edu> - 1.3.8
+* Wed Feb 12 2025 Anushka Srinivasa <as14692@nyu.edu> - 1.3.8
 - Conditionally add build dependency awscli
 - Update project version in CMake
 
