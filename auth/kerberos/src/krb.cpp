@@ -602,6 +602,7 @@ std::vector<std::string> delete_krb_tickets( std::string krb_files_dir, std::str
     }
 
     DIR* curr_dir = opendir(target_path.c_str());
+    struct dirent* file;
     try
     {
         if ( curr_dir )
