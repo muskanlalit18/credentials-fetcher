@@ -999,8 +999,8 @@ class Util
      */
     static bool contains_invalid_characters_in_ad_account_name( const std::string& value )
     {
-        std::vector<char> invalid_characters_ad_name = { '&', ':',  ']',  '[', '+', '|', ';',
-            '/', '\\', '\'', '`', '~' };
+        std::vector<char> invalid_characters_ad_name = { '&', ':',  ']',  '[', '+', '|', ';', 
+                            '$', '*',  '?',  '<', '>', '!', ' ', '/', '\\', '\'', '`', '~' };
         bool result = false;
         // Iterate over all characters in invalid_path_characters vector
         for ( const char& ch : invalid_characters_ad_name )
